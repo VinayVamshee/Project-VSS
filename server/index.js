@@ -158,6 +158,36 @@ app.post('/update-field', async (req, res) => {
 });
 
 
+app.delete('/form/:formId/field/:fieldIndex', async (req, res) => {
+  const { formId, fieldIndex } = req.params;
+  const index = parseInt(fieldIndex, 10);
+
+  try {
+    const form = await FormSchema.findById(formId);
+    if (!form) {
+      return res.status(404).json({ message: 'Form not found' });
+    }
+
+    if (!form.inputFields || index < 0 || index >= form.inputFields.length) {
+      return res.status(400).json({ message: 'Invalid field index' });
+    }
+
+    // Remove the field at index
+    form.inputFields.splice(index, 1);
+
+    // Save the updated form
+    await form.save();
+
+    res.status(200).json({ message: 'Field deleted successfully', form });
+  } catch (error) {
+    console.error('Error deleting field:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
+
 
 const start = async () => {
     try {
