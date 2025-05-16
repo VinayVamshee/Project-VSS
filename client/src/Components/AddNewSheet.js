@@ -7,14 +7,20 @@ export default function AddNewSheet() {
     const [label, setLabel] = useState('');
     const [type, setType] = useState('field');
     const [subFields, setSubFields] = useState([]);
-    const [formSchemas, setFormSchemas] = useState([]); // To store fetched forms
+    const [formSchemas, setFormSchemas] = useState([]);
 
-    // Fetch all form schemas on component mount
+    // For editing
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editFormIndex, setEditFormIndex] = useState(null);
+    const [editFieldIndex, setEditFieldIndex] = useState(null);
+    const [editFieldData, setEditFieldData] = useState({ label: '', type: 'field', fields: [] });
+
+    // Fetch forms once
     useEffect(() => {
         const fetchForms = async () => {
             try {
                 const response = await axios.get('https://vss-server.vercel.app/get-forms');
-                const sortedForms = response.data.sort((a, b) => a.SNo - b.SNo); // Sort by SNo
+                const sortedForms = response.data.sort((a, b) => a.SNo - b.SNo);
                 setFormSchemas(sortedForms);
             } catch (err) {
                 console.error('Error fetching forms:', err);
@@ -27,13 +33,11 @@ export default function AddNewSheet() {
     const handleSubmit = async () => {
         let updatedFields = [...fields];
 
-        // If there's a label (i.e., user is typing a field but didn’t click "Add Field")
         if (label.trim()) {
             const newField = { label, type };
             if (type === 'group' || type === 'option') {
                 newField.fields = subFields.map(label => ({ label }));
             }
-
             updatedFields.push(newField);
         }
 
@@ -43,7 +47,7 @@ export default function AddNewSheet() {
                 inputFields: updatedFields,
             };
 
-            const response = await axios.post('https://vss-server.vercel.app/add-form', payload);
+            await axios.post('https://vss-server.vercel.app/add-form', payload);
             alert('Form submitted successfully!');
             setSNo('');
             setFields([]);
@@ -54,7 +58,6 @@ export default function AddNewSheet() {
             alert('Error submitting form: ' + err.message);
         }
     };
-
 
     const [formData, setFormData] = useState({});
 
@@ -79,9 +82,75 @@ export default function AddNewSheet() {
         }
     };
 
+    // Open edit modal and fill data
+    const openEditModal = (formIndex, fieldIndex) => {
+        const fieldToEdit = formSchemas[formIndex].inputFields[fieldIndex];
+        setEditFormIndex(formIndex);
+        setEditFieldIndex(fieldIndex);
+        setEditFieldData({
+            label: fieldToEdit.label,
+            type: fieldToEdit.type,
+            fields: fieldToEdit.fields ? [...fieldToEdit.fields] : []
+        });
+        setEditModalOpen(true);
+    };
+
+    const handleEditFieldChange = (e) => {
+        const { name, value } = e.target;
+        setEditFieldData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleEditSubFieldChange = (index, value) => {
+        const newSubFields = [...editFieldData.fields];
+        newSubFields[index].label = value;
+        setEditFieldData(prev => ({ ...prev, fields: newSubFields }));
+    };
+
+    const addEditSubField = () => {
+        setEditFieldData(prev => ({
+            ...prev,
+            fields: [...prev.fields, { label: '' }]
+        }));
+    };
+
+    const removeEditSubField = (index) => {
+        const newSubFields = [...editFieldData.fields];
+        newSubFields.splice(index, 1);
+        setEditFieldData(prev => ({ ...prev, fields: newSubFields }));
+    };
+
+    const saveEditField = async () => {
+    try {
+        const updatedField = {
+            label: editFieldData.label,
+            type: editFieldData.type,
+            fields: editFieldData.type === 'field' ? undefined : editFieldData.fields.filter(f => f.label.trim() !== '')
+        };
+
+        // Assume your backend expects form index and field index to identify what to update,
+        // plus the updated field data
+        await axios.post('https://vss-server.vercel.app/update-field', {
+  formId: formSchemas[editFormIndex]._id,  // pass MongoDB id here
+  fieldIndex: editFieldIndex,
+  updatedField: updatedField,
+});
+
+
+        // Update local state only after backend confirms
+        const updatedFormSchemas = [...formSchemas];
+        updatedFormSchemas[editFormIndex].inputFields[editFieldIndex] = updatedField;
+        setFormSchemas(updatedFormSchemas);
+        setEditModalOpen(false);
+        alert('Field updated successfully');
+    } catch (err) {
+        console.error('Failed to update field:', err);
+        alert('Error updating field');
+    }
+};
 
     return (
         <div className="AddNewSheet">
+            {/* Add New Input Field */}
             <button className="btn btn-sm btn-outline-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#CollapseInputField" aria-expanded="false" aria-controls="CollapseInputField">
                 Add New Input Field
             </button>
@@ -133,54 +202,51 @@ export default function AddNewSheet() {
                 </div>
             </div>
 
+            {/* Form Display & Input */}
             <form onSubmit={handleCaseSubmit}>
                 <div className="container-fluid">
                     <div className="row">
                         {formSchemas.map((form, formIndex) =>
                             form.inputFields.map((inputField, index) => (
                                 <div key={`${formIndex}-${index}`} className={inputField.type === 'group' ? 'col-12 mb-3' : 'col-12 col-sm-6 col-md-3 mb-3'}>
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <p className='fw-bold'>{inputField.label}</p>
+                                        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => openEditModal(formIndex, index)}>Edit</button>
+                                    </div>
+
                                     {inputField.type === 'group' ? (
-                                        <div>
-                                            <p className='fw-bold'>{inputField.label}</p>
-                                            <div className="row">
-                                                {inputField.fields.map((subField, idx) => (
-                                                    <div key={idx} className="col-12 col-sm-6 col-md-3 mb-2">
-                                                        <label>{subField.label}:</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control"
-                                                            placeholder={`Enter ${subField.label}`}
-                                                            onChange={(e) => handleChange(subField.label, e.target.value)}
-                                                        />
-                                                    </div>
-                                                ))}
-                                            </div>
+                                        <div className="row">
+                                            {inputField.fields.map((subField, idx) => (
+                                                <div key={idx} className="col-12 col-sm-6 col-md-3 mb-2">
+                                                    <label>{subField.label}:</label>
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        placeholder={`Enter ${subField.label}`}
+                                                        onChange={(e) => handleChange(subField.label, e.target.value)}
+                                                    />
+                                                </div>
+                                            ))}
                                         </div>
                                     ) : inputField.type === 'option' ? (
-                                        <div>
-                                            <p className='fw-bold'>{inputField.label}:</p>
-                                            <select
-                                                className="form-select"
-                                                onChange={(e) => handleChange(inputField.label, e.target.value)}
-                                            >
-                                                <option value="">Select</option>
-                                                {inputField.fields.map((subField, idx) => (
-                                                    <option key={idx} value={subField.label}>
-                                                        {subField.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
+                                        <select
+                                            className="form-select"
+                                            onChange={(e) => handleChange(inputField.label, e.target.value)}
+                                        >
+                                            <option value="">Select</option>
+                                            {inputField.fields.map((subField, idx) => (
+                                                <option key={idx} value={subField.label}>
+                                                    {subField.label}
+                                                </option>
+                                            ))}
+                                        </select>
                                     ) : (
-                                        <div>
-                                            <p className='fw-bold'>{inputField.label}:</p>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                placeholder={`Enter ${inputField.label}`}
-                                                onChange={(e) => handleChange(inputField.label, e.target.value)}
-                                            />
-                                        </div>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder={`Enter ${inputField.label}`}
+                                            onChange={(e) => handleChange(inputField.label, e.target.value)}
+                                        />
                                     )}
                                 </div>
                             ))
@@ -190,8 +256,67 @@ export default function AddNewSheet() {
                 </div>
             </form>
 
+            {/* Edit Modal */}
+            {editModalOpen && (
+                <div className="modal show d-block" tabIndex="-1" role="dialog" aria-modal="true">
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Edit Field</h5>
+                                <button type="button" className="btn-close" aria-label="Close" onClick={() => setEditModalOpen(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="mb-3">
+                                    <label className="form-label">Label</label>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        name="label"
+                                        value={editFieldData.label}
+                                        onChange={handleEditFieldChange}
+                                    />
+                                </div>
 
+                                <div className="mb-3">
+                                    <label className="form-label">Type</label>
+                                    <select
+                                        className="form-select"
+                                        name="type"
+                                        value={editFieldData.type}
+                                        onChange={handleEditFieldChange}
+                                    >
+                                        <option value="field">Individual Field</option>
+                                        <option value="group">Group of Fields</option>
+                                        <option value="option">Group of Options</option>
+                                    </select>
+                                </div>
 
+                                {(editFieldData.type === 'group' || editFieldData.type === 'option') && (
+                                    <>
+                                        <label>Sub-Fields</label>
+                                        {editFieldData.fields.map((subField, i) => (
+                                            <div key={i} className="input-group mb-2">
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    value={subField.label}
+                                                    onChange={(e) => handleEditSubFieldChange(i, e.target.value)}
+                                                />
+                                                <button type="button" className="btn btn-danger" onClick={() => removeEditSubField(i)}>Remove</button>
+                                            </div>
+                                        ))}
+                                        <button type="button" className="btn btn-outline-primary" onClick={addEditSubField}>Add Sub-Field</button>
+                                    </>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => setEditModalOpen(false)}>Cancel</button>
+                                <button type="button" className="btn btn-primary" onClick={saveEditField}>Save changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
