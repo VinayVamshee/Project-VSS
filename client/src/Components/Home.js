@@ -12,12 +12,12 @@ export default function Home() {
         const fetchData = async () => {
             try {
                 // Fetch cases
-                const caseRes = await axios.get('http://localhost:3001/get-cases');
+                const caseRes = await axios.get('https://vss-server.vercel.app/get-cases');
                 const sortedCases = caseRes.data.sort((a, b) => a.SNo - b.SNo);
                 setCaseData(sortedCases);
 
                 // Fetch form schema
-                const formRes = await axios.get('http://localhost:3001/get-forms');
+                const formRes = await axios.get('https://vss-server.vercel.app/get-forms');
                 const sortedForms = formRes.data.sort((a, b) => a.SNo - b.SNo);
                 setFormSchemas(sortedForms);
             } catch (err) {
@@ -36,7 +36,7 @@ export default function Home() {
 
         if (confirmation) {
             try {
-                await axios.put(`http://localhost:3001/close-case/${caseId}`);
+                await axios.put(`https://vss-server.vercel.app/close-case/${caseId}`);
                 alert('Case closed successfully');
                 setCaseData((prevData) =>
                     prevData.map((caseItem) =>
@@ -196,7 +196,7 @@ export default function Home() {
                                                                     className="btn btn-sm btn-success me-2"
                                                                     onClick={async () => {
                                                                         try {
-                                                                            await axios.put(`http://localhost:3001/update-case/${caseItem._id}`, {
+                                                                            await axios.put(`https://vss-server.vercel.app/update-case/${caseItem._id}`, {
                                                                                 inputFields: updatedFields
                                                                             });
                                                                             alert('Case updated successfully');
@@ -258,7 +258,7 @@ export default function Home() {
                                                         const confirmation = window.confirm("Are you sure you want to reopen this case?");
                                                         if (confirmation) {
                                                             try {
-                                                                await axios.put(`http://localhost:3001/reopen-case/${caseItem._id}`);
+                                                                await axios.put(`https://vss-server.vercel.app/reopen-case/${caseItem._id}`);
                                                                 alert('Case reopened successfully');
                                                                 setCaseData((prevData) =>
                                                                     prevData.map((caseItem) =>
