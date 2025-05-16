@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function Navigation() {
-  const [theme, setTheme] = useState('white');
+  const [theme, setTheme] = useState(() => {
+    // Check localStorage for saved theme or default to 'white'
+    return localStorage.getItem('theme') || 'white';
+  });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
   }, [theme]);
 
   return (
@@ -20,7 +24,6 @@ export default function Navigation() {
         <option value="pink">🌸 Rose Blush</option>
         <option value="yellow">🌞 Sunbeam</option>
       </select>
-
     </div>
-  )
+  );
 }
