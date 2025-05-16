@@ -127,7 +127,7 @@ app.put('/reopen-case/:caseId', async (req, res) => {
 // Update a specific input field inside a form document
 app.post('/update-field', async (req, res) => {
     try {
-        const { formId, fieldIndex, updatedField } = req.body;
+        const { formId, fieldIndex, updatedField, SNo } = req.body;
 
         if (!formId || fieldIndex === undefined || !updatedField) {
             return res.status(400).json({ error: 'Missing required fields' });
@@ -146,6 +146,11 @@ app.post('/update-field', async (req, res) => {
 
         // Update the specific input field
         form.inputFields[fieldIndex] = updatedField;
+
+        // ✅ Update SNo if it's passed
+        if (SNo !== undefined && SNo !== null) {
+            form.SNo = SNo;
+        }
 
         // Save changes
         await form.save();
