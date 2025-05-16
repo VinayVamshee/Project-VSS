@@ -149,6 +149,7 @@ export default function AddNewSheet() {
                 formId: formSchemas[editFormIndex]._id,  // pass MongoDB id here
                 fieldIndex: editFieldIndex,
                 updatedField: updatedField,
+                 SNo: editFieldData.SNo
             });
 
 
