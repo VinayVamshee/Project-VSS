@@ -124,6 +124,40 @@ app.put('/reopen-case/:caseId', async (req, res) => {
     }
 });
 
+// Update a specific input field inside a form document
+app.post('/update-field', async (req, res) => {
+    try {
+        const { formId, fieldIndex, updatedField } = req.body;
+
+        if (!formId || fieldIndex === undefined || !updatedField) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // Find the form by ID
+        const form = await FormSchema.findById(formId);
+        if (!form) {
+            return res.status(404).json({ error: 'Form not found' });
+        }
+
+        // Check if fieldIndex is valid
+        if (fieldIndex < 0 || fieldIndex >= form.inputFields.length) {
+            return res.status(400).json({ error: 'Invalid field index' });
+        }
+
+        // Update the specific input field
+        form.inputFields[fieldIndex] = updatedField;
+
+        // Save changes
+        await form.save();
+
+        res.status(200).json({ message: 'Field updated successfully', form });
+    } catch (err) {
+        console.error('Error updating field:', err);
+        res.status(500).json({ error: 'Server error updating field' });
+    }
+});
+
+
 
 const start = async () => {
     try {
