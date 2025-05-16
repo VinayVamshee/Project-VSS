@@ -75,7 +75,7 @@ export default function Home() {
                                     const caseDetails = caseItem.inputFields || {};
 
                                     return (
-                                        <div key={index} className="Case-Item">
+                                          <div key={index} className="Case-Item"  style={{ animationDelay: `${index * 0.1}s` }}>
                                             <div className="Case-OverView">
                                                 <div className="Base-Case">
                                                     <div>S.No. {caseItem.SNo}</div>
@@ -232,7 +232,7 @@ export default function Home() {
                                     const caseDetails = caseItem.inputFields || {};
 
                                     return (
-                                        <div key={index} className="Case-Item">
+                                          <div key={index} className="Case-Item"  style={{ animationDelay: `${index * 0.1}s` }}>
                                             <div className="Case-OverView">
                                                 <div className="Base-Case">
                                                     <div>S.No. {caseItem.SNo}</div>
