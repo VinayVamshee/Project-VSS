@@ -13,7 +13,7 @@ export default function AddNewSheet() {
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editFormIndex, setEditFormIndex] = useState(null);
     const [editFieldIndex, setEditFieldIndex] = useState(null);
-    const [editFieldData, setEditFieldData] = useState({ label: '', type: 'field', fields: [] });
+    const [editFieldData, setEditFieldData] = useState({ SNo: '', label: '', type: 'field', fields: [] });
 
     // Fetch forms once
     useEffect(() => {
@@ -84,16 +84,31 @@ export default function AddNewSheet() {
 
     // Open edit modal and fill data
     const openEditModal = (formIndex, fieldIndex) => {
-        const fieldToEdit = formSchemas[formIndex].inputFields[fieldIndex];
+        const form = formSchemas[formIndex];
+        const fieldToEdit = form.inputFields[fieldIndex];
+
         setEditFormIndex(formIndex);
         setEditFieldIndex(fieldIndex);
+
+        // Get SNo from inputField if exists, else from form level, else fallback
+        const SNo = fieldToEdit.SNo !== undefined && fieldToEdit.SNo !== null
+            ? fieldToEdit.SNo
+            : (form.SNo !== undefined && form.SNo !== null
+                ? form.SNo
+                : (fieldIndex + 1)
+            );
+
         setEditFieldData({
+            SNo: SNo,
             label: fieldToEdit.label,
             type: fieldToEdit.type,
             fields: fieldToEdit.fields ? [...fieldToEdit.fields] : []
         });
+
         setEditModalOpen(true);
     };
+
+
 
     const handleEditFieldChange = (e) => {
         const { name, value } = e.target;
@@ -120,33 +135,60 @@ export default function AddNewSheet() {
     };
 
     const saveEditField = async () => {
-    try {
-        const updatedField = {
-            label: editFieldData.label,
-            type: editFieldData.type,
-            fields: editFieldData.type === 'field' ? undefined : editFieldData.fields.filter(f => f.label.trim() !== '')
-        };
+        try {
+            const updatedField = {
+                SNo: editFieldData.SNo,
+                label: editFieldData.label,
+                type: editFieldData.type,
+                fields: editFieldData.type === 'field' ? undefined : editFieldData.fields.filter(f => f.label.trim() !== '')
+            };
 
-        // Assume your backend expects form index and field index to identify what to update,
-        // plus the updated field data
-        await axios.post('https://vss-server.vercel.app/update-field', {
-  formId: formSchemas[editFormIndex]._id,  // pass MongoDB id here
-  fieldIndex: editFieldIndex,
-  updatedField: updatedField,
-});
+            // Assume your backend expects form index and field index to identify what to update,
+            // plus the updated field data
+            await axios.post('https://vss-server.vercel.app/update-field', {
+                formId: formSchemas[editFormIndex]._id,  // pass MongoDB id here
+                fieldIndex: editFieldIndex,
+                updatedField: updatedField,
+            });
 
 
-        // Update local state only after backend confirms
-        const updatedFormSchemas = [...formSchemas];
-        updatedFormSchemas[editFormIndex].inputFields[editFieldIndex] = updatedField;
-        setFormSchemas(updatedFormSchemas);
-        setEditModalOpen(false);
-        alert('Field updated successfully');
-    } catch (err) {
-        console.error('Failed to update field:', err);
-        alert('Error updating field');
-    }
+            // Update local state only after backend confirms
+            const updatedFormSchemas = [...formSchemas];
+            updatedFormSchemas[editFormIndex].inputFields[editFieldIndex] = updatedField;
+            setFormSchemas(updatedFormSchemas);
+            setEditModalOpen(false);
+            alert('Field updated successfully');
+        } catch (err) {
+            console.error('Failed to update field:', err);
+            alert('Error updating field');
+        }
+    };
+
+   const handleDelete = async (formIndex, fieldIndex) => {
+  const confirmDelete = window.confirm('Are you sure you want to delete this field?');
+  if (!confirmDelete) return; // If user cancels, do nothing
+
+  try {
+    const formId = formSchemas[formIndex]._id; // MongoDB form _id
+
+    // Call backend DELETE endpoint with formId and fieldIndex in the URL
+    await axios.delete(`https://vss-server.vercel.app/form/${formId}/field/${fieldIndex}`);
+
+    // On success, update local state by removing the field locally
+    const updatedForms = [...formSchemas];
+    updatedForms[formIndex].inputFields.splice(fieldIndex, 1);
+    setFormSchemas(updatedForms);
+
+    alert('Field deleted successfully');
+  } catch (error) {
+    console.error('Delete failed:', error);
+    alert('Failed to delete field');
+  }
 };
+
+
+
+
 
     return (
         <div className="AddNewSheet">
@@ -211,7 +253,17 @@ export default function AddNewSheet() {
                                 <div key={`${formIndex}-${index}`} className={inputField.type === 'group' ? 'col-12 mb-3' : 'col-12 col-sm-6 col-md-3 mb-3'}>
                                     <div className="d-flex justify-content-between align-items-center">
                                         <p className='fw-bold'>{inputField.label}</p>
-                                        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => openEditModal(formIndex, index)}>Edit</button>
+                                        <div>
+                                             <button type="button" className="btn btn-sm btn-outline-secondary me-1" onClick={() => openEditModal(formIndex, index)}>Edit</button>
+                                        <button
+                                            type="button"
+                                            className="btn delete-button btn-sm btn-danger"
+                                            onClick={() => handleDelete(formIndex, index)}
+                                        >
+                                            Delete
+                                        </button>
+                                            </div>
+                                       
                                     </div>
 
                                     {inputField.type === 'group' ? (
@@ -266,6 +318,16 @@ export default function AddNewSheet() {
                                 <button type="button" className="btn-close" aria-label="Close" onClick={() => setEditModalOpen(false)}></button>
                             </div>
                             <div className="modal-body">
+                                <div className="mb-3">
+                                    <label className="form-label">SNo</label>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        name="SNo"
+                                        value={editFieldData.SNo}
+                                        onChange={handleEditFieldChange}
+                                    />
+                                </div>
                                 <div className="mb-3">
                                     <label className="form-label">Label</label>
                                     <input
