@@ -30,9 +30,10 @@ export default function AddNewSheet() {
         // If there's a label (i.e., user is typing a field but didn’t click "Add Field")
         if (label.trim()) {
             const newField = { label, type };
-            if (type === 'group') {
+            if (type === 'group' || type === 'option') {
                 newField.fields = subFields.map(label => ({ label }));
             }
+
             updatedFields.push(newField);
         }
 
@@ -103,7 +104,7 @@ export default function AddNewSheet() {
                         </select>
                     </div>
 
-                    {type === 'group' && (
+                    {(type === 'group' || type === 'option') && (
                         <div className="mb-3">
                             <label className="form-label">Sub-Fields</label>
                             <input type="text" className="form-control" placeholder="Press Enter to add sub-field"
