@@ -13,7 +13,7 @@ export default function AddNewSheet() {
     useEffect(() => {
         const fetchForms = async () => {
             try {
-                const response = await axios.get('http://localhost:3001/get-forms');
+                const response = await axios.get('https://vss-server.vercel.app/get-forms');
                 const sortedForms = response.data.sort((a, b) => a.SNo - b.SNo); // Sort by SNo
                 setFormSchemas(sortedForms);
             } catch (err) {
@@ -42,7 +42,7 @@ export default function AddNewSheet() {
                 inputFields: updatedFields,
             };
 
-            const response = await axios.post('http://localhost:3001/add-form', payload);
+            const response = await axios.post('https://vss-server.vercel.app/add-form', payload);
             alert('Form submitted successfully!');
             setSNo('');
             setFields([]);
@@ -67,7 +67,7 @@ export default function AddNewSheet() {
     const handleCaseSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3001/post-case', {
+            await axios.post('https://vss-server.vercel.app/post-case', {
                 SNo: Date.now(),
                 inputFields: formData
             });
