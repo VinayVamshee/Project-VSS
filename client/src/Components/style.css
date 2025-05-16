@@ -109,6 +109,10 @@
   color: var(--text-color);
 }
 
+.delete-button {
+  background-color: rgb(255, 72, 72);
+}
+
 .btn:hover {
   background-color: var(--btn-hover-bg);
 }
