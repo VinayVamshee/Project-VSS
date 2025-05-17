@@ -4,6 +4,7 @@ import axios from 'axios';
 export default function AddNewSheet() {
     const [fields, setFields] = useState([]);
     const [SNo, setSNo] = useState('');
+    const [showIn, setShowIn] = useState([]);
     const [label, setLabel] = useState('');
     const [type, setType] = useState('field');
     const [subFields, setSubFields] = useState([]);
@@ -13,7 +14,7 @@ export default function AddNewSheet() {
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editFormIndex, setEditFormIndex] = useState(null);
     const [editFieldIndex, setEditFieldIndex] = useState(null);
-    const [editFieldData, setEditFieldData] = useState({ SNo: '', label: '', type: 'field', fields: [] });
+    const [editFieldData, setEditFieldData] = useState({ SNo: '', label: '', type: 'field', fields: [], showIn: [] });
 
     // Fetch forms once
     useEffect(() => {
@@ -45,6 +46,7 @@ export default function AddNewSheet() {
             const payload = {
                 SNo: parseInt(SNo),
                 inputFields: updatedFields,
+                showIn: showIn
             };
 
             await axios.post('https://vss-server.vercel.app/add-form', payload);
@@ -102,7 +104,8 @@ export default function AddNewSheet() {
             SNo: SNo,
             label: fieldToEdit.label,
             type: fieldToEdit.type,
-            fields: fieldToEdit.fields ? [...fieldToEdit.fields] : []
+            fields: fieldToEdit.fields ? [...fieldToEdit.fields] : [],
+            showIn: form.showIn || []
         });
 
         setEditModalOpen(true);
@@ -140,7 +143,8 @@ export default function AddNewSheet() {
                 SNo: editFieldData.SNo,
                 label: editFieldData.label,
                 type: editFieldData.type,
-                fields: editFieldData.type === 'field' ? undefined : editFieldData.fields.filter(f => f.label.trim() !== '')
+                fields: editFieldData.type === 'field' ? undefined : editFieldData.fields.filter(f => f.label.trim() !== ''),
+                showIn: editFieldData.showIn || []
             };
 
             // Assume your backend expects form index and field index to identify what to update,
@@ -149,7 +153,6 @@ export default function AddNewSheet() {
                 formId: formSchemas[editFormIndex]._id,  // pass MongoDB id here
                 fieldIndex: editFieldIndex,
                 updatedField: updatedField,
-                 SNo: editFieldData.SNo
             });
 
 
@@ -159,37 +162,43 @@ export default function AddNewSheet() {
             setFormSchemas(updatedFormSchemas);
             setEditModalOpen(false);
             alert('Field updated successfully');
+
         } catch (err) {
             console.error('Failed to update field:', err);
             alert('Error updating field');
         }
     };
 
-   const handleDelete = async (formIndex, fieldIndex) => {
-  const confirmDelete = window.confirm('Are you sure you want to delete this field?');
-  if (!confirmDelete) return; // If user cancels, do nothing
+    const handleDelete = async (formIndex, fieldIndex) => {
+        const confirmDelete = window.confirm('Are you sure you want to delete this field?');
+        if (!confirmDelete) return; // If user cancels, do nothing
 
-  try {
-    const formId = formSchemas[formIndex]._id; // MongoDB form _id
+        try {
+            const formId = formSchemas[formIndex]._id; // MongoDB form _id
 
-    // Call backend DELETE endpoint with formId and fieldIndex in the URL
-    await axios.delete(`https://vss-server.vercel.app/form/${formId}/field/${fieldIndex}`);
+            // Call backend DELETE endpoint with formId and fieldIndex in the URL
+            await axios.delete(`https://vss-server.vercel.app/form/${formId}/field/${fieldIndex}`);
 
-    // On success, update local state by removing the field locally
-    const updatedForms = [...formSchemas];
-    updatedForms[formIndex].inputFields.splice(fieldIndex, 1);
-    setFormSchemas(updatedForms);
+            // On success, update local state by removing the field locally
+            const updatedForms = [...formSchemas];
+            updatedForms[formIndex].inputFields.splice(fieldIndex, 1);
+            setFormSchemas(updatedForms);
 
-    alert('Field deleted successfully');
-  } catch (error) {
-    console.error('Delete failed:', error);
-    alert('Failed to delete field');
-  }
-};
+            alert('Field deleted successfully');
+        } catch (error) {
+            console.error('Delete failed:', error);
+            alert('Failed to delete field');
+        }
+    };
 
-
-
-
+    const handleCheckboxChange = (e) => {
+        const value = e.target.value;
+        setShowIn((prev) =>
+            prev.includes(value)
+                ? prev.filter((item) => item !== value)
+                : [...prev, value]
+        );
+    };
 
     return (
         <div className="AddNewSheet">
@@ -237,7 +246,84 @@ export default function AddNewSheet() {
                             </ul>
                         </div>
                     )}
+                    <div className="mb-3">
+                        <label className="form-label">Show In</label>
+                        <div className="d-flex gap-4 flex-wrap">
+
+                            <div className="form-check">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    value="Case Registration"
+                                    checked={showIn.includes('Case Registration')}
+                                    onChange={handleCheckboxChange}
+                                    id="showin-CaseRegistration"
+                                />
+                                <label className="form-check-label" htmlFor="showin-CaseRegistration">
+                                    Case Registration
+                                </label>
+                            </div>
+                            <div className="form-check">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    value="PC"
+                                    checked={showIn.includes('PC')}
+                                    onChange={handleCheckboxChange}
+                                    id="showin-pc"
+                                />
+                                <label className="form-check-label" htmlFor="showin-pc">
+                                    PC
+                                </label>
+                            </div>
+
+                            <div className="form-check">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    value="DC"
+                                    checked={showIn.includes('DC')}
+                                    onChange={handleCheckboxChange}
+                                    id="showin-dc"
+                                />
+                                <label className="form-check-label" htmlFor="showin-dc">
+                                    DC
+                                </label>
+                            </div>
+
+                            <div className="form-check">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    value="Complaint"
+                                    checked={showIn.includes('Complaint')}
+                                    onChange={handleCheckboxChange}
+                                    id="showin-complaint"
+                                />
+                                <label className="form-check-label" htmlFor="showin-complaint">
+                                    Complaint
+                                </label>
+                            </div>
+
+                            <div className="form-check">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    value="DAR Action"
+                                    checked={showIn.includes('DAR Action')}
+                                    onChange={handleCheckboxChange}
+                                    id="showin-darAction"
+                                />
+                                <label className="form-check-label" htmlFor="showin-darAction">
+                                    DAR Action
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+
+
                 <div className="mt-3">
                     <button className="btn btn-success" onClick={handleSubmit}>
                         Submit Form Label
@@ -250,21 +336,22 @@ export default function AddNewSheet() {
                 <div className="container-fluid">
                     <div className="row">
                         {formSchemas.map((form, formIndex) =>
+                            // form.showIn.includes("Case Registration") &&
                             form.inputFields.map((inputField, index) => (
                                 <div key={`${formIndex}-${index}`} className={inputField.type === 'group' ? 'col-12 mb-3' : 'col-12 col-sm-6 col-md-3 mb-3'}>
                                     <div className="d-flex justify-content-between align-items-center">
                                         <p className='fw-bold'>{inputField.label}</p>
                                         <div>
-                                             <button type="button" className="btn btn-sm btn-outline-secondary me-1" onClick={() => openEditModal(formIndex, index)}>Edit</button>
-                                        <button
-                                            type="button"
-                                            className="btn delete-button btn-sm btn-danger"
-                                            onClick={() => handleDelete(formIndex, index)}
-                                        >
-                                            Delete
-                                        </button>
-                                            </div>
-                                       
+                                            <button type="button" className="btn btn-sm btn-outline-secondary me-1" onClick={() => openEditModal(formIndex, index)}>Edit</button>
+                                            <button
+                                                type="button"
+                                                className="btn delete-button btn-sm btn-danger"
+                                                onClick={() => handleDelete(formIndex, index)}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+
                                     </div>
 
                                     {inputField.type === 'group' ? (
@@ -371,6 +458,34 @@ export default function AddNewSheet() {
                                         <button type="button" className="btn btn-outline-primary" onClick={addEditSubField}>Add Sub-Field</button>
                                     </>
                                 )}
+
+                                <div className="mb-3">
+                                    <label className="form-label">Show In</label>
+                                    <div className="d-flex gap-4 flex-wrap">
+                                        {['Case Registration', 'PC', 'DC'].map((val) => (
+                                            <div className="form-check" key={val}>
+                                                <input
+                                                    className="form-check-input"
+                                                    type="checkbox"
+                                                    value={val}
+                                                    checked={editFieldData.showIn?.includes(val)}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
+                                                        const updatedShowIn = editFieldData.showIn?.includes(value)
+                                                            ? editFieldData.showIn.filter((item) => item !== value)
+                                                            : [...(editFieldData.showIn || []), value];
+                                                        setEditFieldData(prev => ({ ...prev, showIn: updatedShowIn }));
+                                                    }}
+                                                    id={`edit-showin-${val}`}
+                                                />
+                                                <label className="form-check-label" htmlFor={`edit-showin-${val}`}>
+                                                    {val}
+                                                </label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => setEditModalOpen(false)}>Cancel</button>
@@ -379,7 +494,8 @@ export default function AddNewSheet() {
                         </div>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
