@@ -6,19 +6,26 @@
 
 /* Default theme (white) */
 :root {
-  --navigation-color: #1f1f1f;
-  --bg-color: #f4f4f4;
-  --text-color: #333333;
-  --btn-bg: #ffffff;
-  --btn-hover-bg: #e0e0e0;
-  --filter-bg: #2c2c2c;
-  --case-overview-bg: #ffffff;
-  --case-info-bg: #fdf5e6;
-  --status-btn-bg: #ffffff;
-  --status-btn-active-bg: #cce5ff;
-  --scrollbar-bg: #ccc;
-  --scrollbar-thumb: #888;
+  --navigation-color: #9AA6B2;           /* Muted blue-gray nav */
+  --bg-color: #F8FAFC;                   /* Very light soft background */
+  --text-color: #2e2e2e;                 /* Dark text for good contrast */
+
+  --btn-bg: #BCCCDC;                     /* Soft blue-gray buttons */
+  --btn-hover-bg: rgba(188, 204, 220, 0.8); /* Slightly darker button hover */
+
+  --filter-bg: #D9EAFD;                  /* Light bright filter background */
+  --case-overview-bg: #FFFFFF;           /* Pure white for contrast */
+  --case-info-bg: #F8FAFC;               /* Light info background */
+
+  --status-btn-bg: #BCCCDC;              /* Calm button base */
+  --status-btn-active-bg: #4c5258;       /* Active status highlight */
+
+  --scrollbar-bg: #D9EAFD;
+  --scrollbar-thumb: #9AA6B2;
 }
+
+
+
 
 /* Black / Dark Theme */
 [data-theme='black'] {
@@ -95,7 +102,7 @@
   --case-overview-bg: #fff9cc;
   --case-info-bg: #fff3b3;
   --status-btn-bg: #fff2b3;
-  --status-btn-active-bg: #ffd11a;
+  --status-btn-active-bg: #826b0d;
   --scrollbar-bg: #ffe680;
   --scrollbar-thumb: #d4af37;
 }
@@ -104,9 +111,14 @@
   background-color: var(--navigation-color);
 }
 
-.btn {
+.Navigation .btn {
   background-color: var(--btn-bg);
   color: var(--text-color);
+}
+.Navigation .btn.active {
+  background-color: var(--status-btn-active-bg); /* #99BC85 */
+  border: 1px solid var(--accent-color);
+  color: white;
 }
 
 .delete-button {
@@ -127,11 +139,15 @@
 .Navigation {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
     padding: 10px;
     gap: 10px;
     width: 100%;
     background-color: var(--navigation-color);
+
+    position: sticky;
+    top: 0px;
+    z-index: 100;
 }
 
 .Navigation .btn {
@@ -248,8 +264,8 @@
     display: flex;
     gap: 10px;
     width: 100%;
-    flex-wrap: wrap;
     align-items: center;
+    justify-content: space-between;
 }
 
 .Grid .Base-Case {
@@ -257,12 +273,12 @@
     gap: 15px;
     align-items: center;
     justify-content: flex-start;
-    flex-wrap: wrap;
-    width: 100%;
     padding: 10px;
     background-color: var(--case-overview-bg);
     border-radius: 5px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+    flex: 1;
 }
 
 .Grid .Case-Info {
