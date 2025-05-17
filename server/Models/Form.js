@@ -12,7 +12,12 @@ const inputFieldSchema = new mongoose.Schema({
 
 const FormSchema = new mongoose.Schema({
     SNo: { type: Number },
-    inputFields: [inputFieldSchema]
+    inputFields: [inputFieldSchema],
+    showIn: {
+        type: [String],
+        default: []
+    }
+
 });
 
 module.exports = mongoose.model('Form', FormSchema);
