@@ -22,8 +22,8 @@ const PORT = process.env.PORT || 5000;
 // Save form template
 app.post('/add-form', async (req, res) => {
     try {
-        const { SNo, inputFields } = req.body;
-        const form = new FormSchema({ SNo, inputFields });
+        const { SNo, inputFields, showIn } = req.body;
+        const form = new FormSchema({ SNo, inputFields, showIn });
         await form.save();
         res.status(201).json({ message: 'Form saved successfully', form });
     } catch (err) {
@@ -77,7 +77,7 @@ app.put('/update-case/:id', async (req, res) => {
         const updatedCase = await Case.findByIdAndUpdate(
             caseId,
             { inputFields, Closed },
-            { new: true } // Return the updated document
+            { new: true } 
         );
 
         res.status(200).json({ message: "Case updated successfully", updatedCase });
@@ -127,32 +127,37 @@ app.put('/reopen-case/:caseId', async (req, res) => {
 // Update a specific input field inside a form document
 app.post('/update-field', async (req, res) => {
     try {
-        const { formId, fieldIndex, updatedField, SNo } = req.body;
+        const { formId, fieldIndex, updatedField } = req.body;
 
         if (!formId || fieldIndex === undefined || !updatedField) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        // Find the form by ID
         const form = await FormSchema.findById(formId);
         if (!form) {
             return res.status(404).json({ error: 'Form not found' });
         }
 
-        // Check if fieldIndex is valid
         if (fieldIndex < 0 || fieldIndex >= form.inputFields.length) {
             return res.status(400).json({ error: 'Invalid field index' });
         }
 
-        // Update the specific input field
-        form.inputFields[fieldIndex] = updatedField;
+        // Update allowed inputField fields only
+        form.inputFields[fieldIndex] = {
+            ...form.inputFields[fieldIndex]._doc,
+            label: updatedField.label,
+            type: updatedField.type,
+            fields: updatedField.type === 'field' ? undefined : (updatedField.fields || [])
+        };
 
-        // ✅ Update SNo if it's passed
-        if (SNo !== undefined && SNo !== null) {
-            form.SNo = SNo;
+        // Update SNo and showIn at form level if provided
+        if (updatedField.SNo !== undefined) {
+            form.SNo = updatedField.SNo;
+        }
+        if (updatedField.showIn !== undefined) {
+            form.showIn = updatedField.showIn;
         }
 
-        // Save changes
         await form.save();
 
         res.status(200).json({ message: 'Field updated successfully', form });
