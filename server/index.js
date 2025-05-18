@@ -22,8 +22,8 @@ const PORT = process.env.PORT || 5000;
 // Save form template
 app.post('/add-form', async (req, res) => {
     try {
-        const { SNo, inputFields } = req.body;
-        const form = new FormSchema({ SNo, inputFields });
+        const { SNo, inputFields, showIn } = req.body;
+        const form = new FormSchema({ SNo, inputFields, showIn });
         await form.save();
         res.status(201).json({ message: 'Form saved successfully', form });
     } catch (err) {
@@ -77,7 +77,7 @@ app.put('/update-case/:id', async (req, res) => {
         const updatedCase = await Case.findByIdAndUpdate(
             caseId,
             { inputFields, Closed },
-            { new: true } // Return the updated document
+            { new: true } 
         );
 
         res.status(200).json({ message: "Case updated successfully", updatedCase });
@@ -102,6 +102,25 @@ app.put('/close-case/:id', async (req, res) => {
     }
 });
 
+app.put('/transfer-dar-action/:id', async (req, res) => {
+  const caseId = req.params.id;
+
+  try {
+    const updatedCase = await Case.findByIdAndUpdate(
+      caseId,
+      {
+        checkClose: true
+      },
+      { new: true }
+    );
+    res.json(updatedCase);
+  } catch (err) {
+    console.error('Transfer error:', err);
+    res.status(500).json({ message: 'Error transferring case to DAR Action' });
+  }
+});
+
+
 app.put('/reopen-case/:caseId', async (req, res) => {
     const { caseId } = req.params;
 
@@ -123,6 +142,80 @@ app.put('/reopen-case/:caseId', async (req, res) => {
         res.status(500).json({ message: 'Error reopening case' });
     }
 });
+
+// Update a specific input field inside a form document
+app.post('/update-field', async (req, res) => {
+    try {
+        const { formId, fieldIndex, updatedField } = req.body;
+
+        if (!formId || fieldIndex === undefined || !updatedField) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const form = await FormSchema.findById(formId);
+        if (!form) {
+            return res.status(404).json({ error: 'Form not found' });
+        }
+
+        if (fieldIndex < 0 || fieldIndex >= form.inputFields.length) {
+            return res.status(400).json({ error: 'Invalid field index' });
+        }
+
+        // Update allowed inputField fields only
+        form.inputFields[fieldIndex] = {
+            ...form.inputFields[fieldIndex]._doc,
+            label: updatedField.label,
+            type: updatedField.type,
+            fields: updatedField.type === 'field' ? undefined : (updatedField.fields || [])
+        };
+
+        // Update SNo and showIn at form level if provided
+        if (updatedField.SNo !== undefined) {
+            form.SNo = updatedField.SNo;
+        }
+        if (updatedField.showIn !== undefined) {
+            form.showIn = updatedField.showIn;
+        }
+
+        await form.save();
+
+        res.status(200).json({ message: 'Field updated successfully', form });
+    } catch (err) {
+        console.error('Error updating field:', err);
+        res.status(500).json({ error: 'Server error updating field' });
+    }
+});
+
+
+app.delete('/form/:formId/field/:fieldIndex', async (req, res) => {
+  const { formId, fieldIndex } = req.params;
+  const index = parseInt(fieldIndex, 10);
+
+  try {
+    const form = await FormSchema.findById(formId);
+    if (!form) {
+      return res.status(404).json({ message: 'Form not found' });
+    }
+
+    if (!form.inputFields || index < 0 || index >= form.inputFields.length) {
+      return res.status(400).json({ message: 'Invalid field index' });
+    }
+
+    // Remove the field at index
+    form.inputFields.splice(index, 1);
+
+    // Save the updated form
+    await form.save();
+
+    res.status(200).json({ message: 'Field deleted successfully', form });
+  } catch (error) {
+    console.error('Error deleting field:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
 
 
 const start = async () => {

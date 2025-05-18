@@ -10,6 +10,14 @@ const CaseSchema = new Schema({
         type: Object,
         required: true
     },
+    checkClose: {
+        type: Boolean,
+        default: false
+    },
+    checkClosedAt: {
+        type: Date,
+        default: null
+    },
     Closed: {
         type: Boolean,
         default: false
@@ -23,6 +31,9 @@ const CaseSchema = new Schema({
 CaseSchema.pre('save', function (next) {
     if (this.isModified('Closed') && this.Closed === true && !this.closedAt) {
         this.closedAt = new Date();
+    }
+    if(this.isModified('checkClose') && this.checkClose === true && !this.checkClosedAt) {
+        this.checkClosedAt = new Date();
     }
     next();
 });

@@ -1,24 +1,32 @@
 * {
-    scroll-behavior: smooth;
-    font-family: 'Times New Roman', Times, serif;
-    font-size: small;
+  scroll-behavior: smooth;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: small;
 }
 
-/* Default theme (white) */
 :root {
-  --navigation-color: #1f1f1f;
-  --bg-color: #f4f4f4;
-  --text-color: #333333;
-  --btn-bg: #ffffff;
-  --btn-hover-bg: #e0e0e0;
-  --filter-bg: #2c2c2c;
-  --case-overview-bg: #ffffff;
-  --case-info-bg: #fdf5e6;
-  --status-btn-bg: #ffffff;
-  --status-btn-active-bg: #cce5ff;
-  --scrollbar-bg: #ccc;
-  --scrollbar-thumb: #888;
+  --navigation-color: #333;
+  --bg-color: #F7FAFE;
+  --text-color: #1f1f1f;
+
+  --btn-bg: #dbe6f2;
+  --btn-hover-bg: #c8d8ec;
+
+  --filter-bg: #333;
+  --case-overview-bg: #FFFFFF;
+  --case-info-bg: #F4F8FC;
+
+  --status-btn-bg: #dbe6f2;
+  --status-btn-active-bg: #3f4d5c;
+
+  --scrollbar-bg: #d2e9fc;
+  --scrollbar-thumb: #7c8fa6;
+
+  --vigilance-bg: linear-gradient(135deg, #f7fafc 0%, #dbe6f2 100%);
+  --vigilance-glow: #a3b8f0;
+  --vigilance-text: #1f1f1f;
 }
+
 
 /* Black / Dark Theme */
 [data-theme='black'] {
@@ -34,6 +42,10 @@
   --status-btn-active-bg: #555555;
   --scrollbar-bg: #444;
   --scrollbar-thumb: #888;
+
+  --vigilance-bg: linear-gradient(135deg, #222222 0%, #4444ff 100%);
+  --vigilance-glow: #4444ff;
+  --vigilance-text: #e0e0ff;
 }
 
 /* Red Theme */
@@ -50,23 +62,36 @@
   --status-btn-active-bg: #ff6666;
   --scrollbar-bg: #f2bcbc;
   --scrollbar-thumb: #a94442;
+
+  --vigilance-bg: linear-gradient(135deg, #ffcccc 0%, #ff6666 100%);
+  --vigilance-glow: #ff4c4c;
+  --vigilance-text: #660000;
 }
 
 /* Blue Theme */
 [data-theme='blue'] {
-  --navigation-color: #003366;
-  --bg-color: #e6f0ff;
-  --text-color: #001f4d;
-  --btn-bg: #cce0ff;
-  --btn-hover-bg: #99c2ff;
-  --filter-bg: #336699;
-  --case-overview-bg: #f0f8ff;
-  --case-info-bg: #d6eaff;
-  --status-btn-bg: #cce0ff;
-  --status-btn-active-bg: #66b2ff;
-  --scrollbar-bg: #aac;
-  --scrollbar-thumb: #4477aa;
+  --navigation-color: #002244;
+  --bg-color: #e8f0ff;
+  --text-color: #0b1a33;
+
+  --btn-bg: #ccdfff;
+  --btn-hover-bg: #a9c8ff;
+
+  --filter-bg: #325d9c;
+  --case-overview-bg: #f0f6ff;
+  --case-info-bg: #d3e5ff;
+
+  --status-btn-bg: #ccdfff;
+  --status-btn-active-bg: #468df2;
+
+  --scrollbar-bg: #c5d9f7;
+  --scrollbar-thumb: #6c9bd1;
+
+  --vigilance-bg: linear-gradient(135deg, #cce0ff 0%, #468df2 100%);
+  --vigilance-glow: #468df2;
+  --vigilance-text: #0b1a33;
 }
+
 
 /* 🌸 Rose Blush (Pink Theme) */
 [data-theme='pink'] {
@@ -82,6 +107,10 @@
   --status-btn-active-bg: #ff80bf;
   --scrollbar-bg: #f7c1da;
   --scrollbar-thumb: #c94f94;
+
+  --vigilance-bg: linear-gradient(135deg, #ffd6ea 0%, #ff80bf 100%);
+  --vigilance-glow: #ff80bf;
+  --vigilance-text: #4d0033;
 }
 
 /* 🌞 Sunbeam (Yellow Theme) */
@@ -95,18 +124,147 @@
   --case-overview-bg: #fff9cc;
   --case-info-bg: #fff3b3;
   --status-btn-bg: #fff2b3;
-  --status-btn-active-bg: #ffd11a;
+  --status-btn-active-bg: #826b0d;
   --scrollbar-bg: #ffe680;
   --scrollbar-thumb: #d4af37;
+
+  --vigilance-bg: linear-gradient(135deg, #fff6c8 0%, #ffcc00 100%);
+  --vigilance-glow: #826b0d;
+  --vigilance-text: #4d3d00;
 }
+
+[data-theme='green'] {
+  --navigation-color: #2e5e2e;
+  --bg-color: #e6f4e6;
+  --text-color: #1e3d1e;
+  --btn-bg: #a8d5a2;
+  --btn-hover-bg: #87c587;
+  --filter-bg: #b5deb4;
+  --case-overview-bg: #f0fff0;
+  --case-info-bg: #d8f8d8;
+  --status-btn-bg: #a8d5a2;
+  --status-btn-active-bg: #3d7a3d;
+  --scrollbar-bg: #bde5bd;
+  --scrollbar-thumb: #5e8c5e;
+
+  --vigilance-bg: linear-gradient(135deg, #a8d5a2 0%, #3d7a3d 100%);
+  --vigilance-glow: #3d7a3d;
+  --vigilance-text: #1e3d1e;
+}
+
+[data-theme='brown'] {
+  --navigation-color: #5c4033;
+  --bg-color: #f5f0eb;
+  --text-color: #3b2e1a;
+  --btn-bg: #d2b48c;
+  --btn-hover-bg: #c19a6b;
+  --filter-bg: #deb887;
+  --case-overview-bg: #fffaf0;
+  --case-info-bg: #f5deb3;
+  --status-btn-bg: #d2b48c;
+  --status-btn-active-bg: #8b5a2b;
+  --scrollbar-bg: #e0c8a2;
+  --scrollbar-thumb: #a9744f;
+
+  --vigilance-bg: linear-gradient(135deg, #d2b48c 0%, #8b5a2b 100%);
+  --vigilance-glow: #8b5a2b;
+  --vigilance-text: #3b2e1a;
+}
+
+[data-theme='purple'] {
+  --navigation-color: #7e5a9b;
+  --bg-color: #f5f0ff;
+  --text-color: #3c245c;
+  --btn-bg: #e0ccff;
+  --btn-hover-bg: #c7a3ff;
+  --filter-bg: #d7bde2;
+  --case-overview-bg: #faf5ff;
+  --case-info-bg: #edd9ff;
+  --status-btn-bg: #e0ccff;
+  --status-btn-active-bg: #8e44ad;
+  --scrollbar-bg: #d8c2f0;
+  --scrollbar-thumb: #a76ed1;
+
+  --vigilance-bg: linear-gradient(135deg, #e0ccff 0%, #8e44ad 100%);
+  --vigilance-glow: #8e44ad;
+  --vigilance-text: #3c245c;
+}
+
+[data-theme='orange'] {
+  --navigation-color: #ff7043;
+  --bg-color: #fff3e0;
+  --text-color: #4e342e;
+  --btn-bg: #ffe0b2;
+  --btn-hover-bg: #ffb74d;
+  --filter-bg: #ffe0cc;
+  --case-overview-bg: #fff8f0;
+  --case-info-bg: #ffecdb;
+  --status-btn-bg: #ffd8b2;
+  --status-btn-active-bg: #ff5722;
+  --scrollbar-bg: #ffe0cc;
+  --scrollbar-thumb: #ffab91;
+
+  --vigilance-bg: linear-gradient(135deg, #ffd8b2 0%, #ff5722 100%);
+  --vigilance-glow: #ff5722;
+  --vigilance-text: #4e342e;
+}
+
+[data-theme='grey'] {
+  --navigation-color: #9e9e9e;
+  --bg-color: #f5f5f5;
+  --text-color: #424242;
+  --btn-bg: #e0e0e0;
+  --btn-hover-bg: #bdbdbd;
+  --filter-bg: #e8e8e8;
+  --case-overview-bg: #f9f9f9;
+  --case-info-bg: #eaeaea;
+  --status-btn-bg: #d6d6d6;
+  --status-btn-active-bg: #757575;
+  --scrollbar-bg: #dedede;
+  --scrollbar-thumb: #a8a8a8;
+
+  --vigilance-bg: linear-gradient(135deg, #e0e0e0 0%, #757575 100%);
+  --vigilance-glow: #757575;
+  --vigilance-text: #424242;
+}
+
+[data-theme='aqua'] {
+  --navigation-color: #00bcd4;
+  --bg-color: #e0f7fa;
+  --text-color: #006064;
+  --btn-bg: #b2ebf2;
+  --btn-hover-bg: #4dd0e1;
+  --filter-bg: #d0f0f5;
+  --case-overview-bg: #e8fcff;
+  --case-info-bg: #ccf2f7;
+  --status-btn-bg: #b2ebf2;
+  --status-btn-active-bg: #0097a7;
+  --scrollbar-bg: #c8f4f9;
+  --scrollbar-thumb: #4dd0e1;
+
+  --vigilance-bg: linear-gradient(135deg, #b2ebf2 0%, #0097a7 100%);
+  --vigilance-glow: #0097a7;
+  --vigilance-text: #006064;
+}
+
 
 .Navigation {
   background-color: var(--navigation-color);
 }
 
-.btn {
+.Navigation .btn {
   background-color: var(--btn-bg);
   color: var(--text-color);
+}
+
+.Navigation .btn.active {
+  background-color: var(--status-btn-active-bg);
+  border: 1px solid var(--accent-color);
+  color: white;
+}
+
+.delete-button {
+  background-color: rgb(255, 72, 72);
 }
 
 .btn:hover {
@@ -114,163 +272,274 @@
 }
 
 .App {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .Navigation {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 10px;
-    gap: 10px;
-    width: 100%;
-    background-color: var(--navigation-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  gap: 10px;
+  width: 100%;
+  background-color: var(--navigation-color);
+
+  position: sticky;
+  top: 0px;
+  z-index: 100;
 }
 
 .Navigation .btn {
-    background-color: var(--btn-bg);
-    border-radius: 10px;
-    padding: 6px 12px;
-    border: 1px solid #ccc;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+  background-color: var(--btn-bg);
+  border-radius: 10px;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .Navigation .btn:hover {
-    background-color: var(--btn-hover-bg);
+  background-color: var(--btn-hover-bg);
 }
 
 .AddNewSheet {
-    padding: 15px;
-    width: 100%;
-    min-height: 100vh;
-    background-color: var(--bg-color);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  padding: 15px;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .Home {
-    padding: 15px;
-    width: 100%;
-    min-height: 100vh;
-    background-color: var(--bg-color);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  padding: 15px;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .Filters {
-    border-bottom: 1px solid #ccc;
-    padding: 10px;
-    display: flex;
-    gap: 10px;
-    background-color: var(--filter-bg);
+  border-bottom: 1px solid #ccc;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  background-color: var(--filter-bg);
 }
 
 .Filters .btn {
-    background-color: var(--btn-bg);
-    color: var(--text-color);
-    padding: 6px 12px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    transition: background-color 0.2s ease;
+  background-color: var(--btn-bg);
+  color: var(--text-color);
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  transition: background-color 0.2s ease;
 }
 
 .Filters .btn:hover {
-    background-color: var(--btn-hover-bg);
+  background-color: var(--btn-hover-bg);
 }
 
 .Home .StatusBar {
-    display: flex;
-    gap: 50px;
+  display: flex;
+  gap: 50px;
 }
 
 .Home .StatusBar .Status {
-    padding: 10px 15px;
-    background-color: var(--status-btn-bg);
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
+  padding: 10px 15px;
+  background-color: var(--status-btn-bg);
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
 }
 
 .Home .StatusBar .Status.active {
-    background-color: var(--status-btn-active-bg);
+  background-color: var(--status-btn-active-bg);
 }
 
 .Home .Grid {
-    height: 85vh;
-    padding: 15px;
-    overflow-y: scroll;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  height: 85vh;
+  padding: 15px;
+  overflow-y: scroll;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* Optional scrollbar styling */
 .Home .Grid::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
+
 .Home .Grid::-webkit-scrollbar-track {
-    background: var(--scrollbar-bg);
+  background: var(--scrollbar-bg);
 }
+
 .Home .Grid::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb);
-    border-radius: 4px;
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
 }
 
 .Home .Grid .Case-Item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 10px;
-    background-color: var(--case-info-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  background-color: var(--case-info-bg);
+  opacity: 0;
+
+  animation: slideDown 0.6s ease-in-out forwards;
 }
 
 .Grid .Case-OverView {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    flex-wrap: wrap;
-    align-items: center;
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .Grid .Base-Case {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    width: 100%;
-    padding: 10px;
-    background-color: var(--case-overview-bg);
-    border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 10px;
+  background-color: var(--case-overview-bg);
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  flex: 1;
 }
 
 .Grid .Case-Info {
-    display: flex;
-    width: 100%;
-    background-color: var(--case-info-bg);
-    padding: 10px;
-    border-radius: 5px;
+  display: flex;
+  width: 100%;
+  background-color: var(--case-info-bg);
+  padding: 10px;
+  border-radius: 5px;
 }
 
 /* Collapse animation */
 .collapse {
-    transition: max-height 0.3s ease;
+  transition: max-height 0.3s ease;
 }
 
 button {
-    cursor: pointer;
+  cursor: pointer;
+}
+
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(50px);
+    /* overshoot downwards */
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    /* final position */
+  }
+}
+
+/* Container hides overflow */
+.marquee-wrapper {
+  overflow: hidden;
+  width: 100%;
+  background: #f0f4f8;
+  border-bottom: 2px solid #9aa6b2;
+  padding: 1rem 0;
+  box-sizing: border-box;
+}
+
+/* Flex container for marquee text */
+.marquee {
+  display: flex;
+  white-space: nowrap;
+  animation: scrollRight 20s linear infinite;
+}
+
+.marquee span {
+  color: var(--vigilance-text);
+}
+
+/* Each item spaced 5rem apart */
+.item {
+  display: inline-block;
+  margin: 0 5rem;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #0077b6;
+  user-select: none;
+}
+
+/* Animation moves marquee left to right continuously */
+@keyframes scrollRight {
+  0% {
+    transform: translateX(-50%);
+  }
+
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+/* Vigilance Feature Box */
+.vigilance-feature {
+  margin: 2rem auto;
+  max-width: 600px;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  background: var(--vigilance-bg);
+  color: var(--vigilance-text);
+  box-shadow: 0 0 8px 2px var(--vigilance-glow);
+  transition: all 0.3s ease;
+  animation: pulseGlow 3s ease-in-out infinite;
+  text-align: center;
+}
+
+.vigilance-feature:hover {
+  box-shadow: 0 0 12px 5px var(--vigilance-glow);
+}
+
+.vigilance-feature h2 {
+  margin-bottom: 0.5rem;
+  font-size: 2rem;
+}
+
+.vigilance-feature p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* Glow animation for vigilance box */
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 8px 30px rgba(0, 123, 255, 0.7);
+  }
 }

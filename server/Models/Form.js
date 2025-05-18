@@ -5,14 +5,19 @@ const subFieldSchema = new mongoose.Schema({
 });
 
 const inputFieldSchema = new mongoose.Schema({
-    label: { type: String, required: true },       // e.g., "Personal Information"
+    label: { type: String, required: true },
     type: { type: String, enum: ['group', 'field', 'option'], required: true },
-    fields: [subFieldSchema]                        // only for 'group' type
+    fields: [subFieldSchema]
 });
 
 const FormSchema = new mongoose.Schema({
     SNo: { type: Number },
-    inputFields: [inputFieldSchema]
+    inputFields: [inputFieldSchema],
+    showIn: {
+        type: [String],
+        default: []
+    }
+
 });
 
 module.exports = mongoose.model('Form', FormSchema);
