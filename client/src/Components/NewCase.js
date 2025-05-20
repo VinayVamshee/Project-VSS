@@ -8,7 +8,7 @@ export default function NewCase() {
     useEffect(() => {
         const fetchForms = async () => {
             try {
-                const response = await axios.get('http://localhost:3001/get-forms');
+                const response = await axios.get('https://vss-server.vercel.app/get-forms');
                 const sortedForms = response.data.sort((a, b) => a.SNo - b.SNo);
                 setFormSchemas(sortedForms);
             } catch (err) {
@@ -32,7 +32,7 @@ export default function NewCase() {
     const handleCaseSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3001/post-case', {
+            await axios.post('https://vss-server.vercel.app/post-case', {
                 SNo: Date.now(),
                 inputFields: formData
             });
