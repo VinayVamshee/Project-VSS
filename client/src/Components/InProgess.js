@@ -7,6 +7,12 @@ export default function InProgress() {
     const [editMode, setEditMode] = useState(null);
     const [updatedFields, setUpdatedFields] = useState({});
     const [filterType, setFilterType] = useState("All");
+    const [filters, setFilters] = useState([]);
+    const [selectedField, setSelectedField] = useState("");
+    const [searchText, setSearchText] = useState("");
+
+
+
 
     const fetchData = async () => {
         try {
@@ -57,35 +63,180 @@ export default function InProgress() {
 
             <div className="Grid">
 
-                <div className='Filters'>
-                    <button className={`btn ${filterType === "All" ? "active" : ""}`} onClick={() => setFilterType("All")} >
-                        All
-                    </button>
-                    <button className={`btn ${filterType === "Preventive Check" ? "active" : ""}`} onClick={() => setFilterType("Preventive Check")} >
-                        Preventive Check
-                    </button>
+                <div className='Filter-Grid'>
 
-                    <button className={`btn ${filterType === "Decoy Check" ? "active" : ""}`} onClick={() => setFilterType("Decoy Check")} >
-                        Decoy Check
-                    </button>
+                    <div className='Filters'>
+                        <button style={{fontWeight: 'bold'}} className={`btn ${filterType === "All" ? "active" : ""}`} onClick={() => setFilterType("All")} >
+                            All
+                        </button>
+                        <button style={{fontWeight: 'bold'}} className={`btn ${filterType === "Preventive Check" ? "active" : ""}`} onClick={() => setFilterType("Preventive Check")} >
+                            Preventive Check
+                        </button>
 
-                    <button className={`btn ${filterType === "Complaint" ? "active" : ""}`} onClick={() => setFilterType("Complaint")} >
-                        <i className="fa-solid fa-box-archive fa-lg me-2"></i>Complaints
-                    </button>
+                        <button style={{fontWeight: 'bold'}} className={`btn ${filterType === "Decoy Check" ? "active" : ""}`} onClick={() => setFilterType("Decoy Check")} >
+                            Decoy Check
+                        </button>
 
-                    <button className={`btn ${filterType === "DAR Action" ? "active" : ""}`} onClick={() => setFilterType("DAR Action")} >
-                        <i className="fa-solid fa-user-secret fa-lg me-2"></i>DAR Action
-                    </button>
+                        <button style={{fontWeight: 'bold'}} className={`btn ${filterType === "Complaint" ? "active" : ""}`} onClick={() => setFilterType("Complaint")} >
+                            Complaints
+                        </button>
 
+                        <button style={{fontWeight: 'bold'}} className={`btn ${filterType === "DAR Action" ? "active" : ""}`} onClick={() => setFilterType("DAR Action")} >
+                            DAR Action
+                        </button>
+                    </div>
+
+
+                    <div className="AllFilters Filters" >
+                        <div className="">
+                            <div className="input-group">
+
+                                {/* Dynamic input box or select based on selected field */}
+                                {(() => {
+                                    let selectedConfig = null;
+
+                                    for (const form of formSchemas) {
+                                        for (const field of form.inputFields) {
+                                            if (field.type === "group") {
+                                                for (const subField of field.fields) {
+                                                    if (`${field.label} - ${subField.label}` === selectedField) {
+                                                        selectedConfig = {
+                                                            type: "group-subfield",
+                                                            config: subField,
+                                                            parentLabel: field.label,
+                                                        };
+                                                        break;
+                                                    }
+                                                }
+                                            } else {
+                                                if (field.label === selectedField) {
+                                                    selectedConfig = { type: field.type, config: field };
+                                                    break;
+                                                }
+                                            }
+                                            if (selectedConfig) break;
+                                        }
+                                        if (selectedConfig) break;
+                                    }
+
+                                    if (selectedConfig?.type === "option") {
+                                        return (
+                                            <select
+                                                className="form-select"
+                                                value={searchText}
+                                                onChange={(e) => setSearchText(e.target.value)}
+                                            >
+                                                <option value="">Select {selectedField}</option>
+                                                {selectedConfig.config.fields.map((option, idx) => (
+                                                    <option key={idx} value={option.label}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        );
+                                    }
+
+                                    // Default: show text input
+                                    return (
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder={`Enter search value for ${selectedField || "Select field"}`}
+                                            value={searchText}
+                                            onChange={(e) => setSearchText(e.target.value)}
+                                        />
+                                    );
+                                })()}
+
+                                {/* Dropdown for field selection */}
+                                <button
+                                    className="btn btn-outline-secondary dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                >
+                                    <i class="fa-brands fa-searchengin fa-xl me-2"></i>{selectedField || "Select field"}
+                                </button>
+                                <ul className="dropdown-menu dropdown-menu-end">
+                                    {formSchemas
+                                        .flatMap((form) =>
+                                            form.inputFields.flatMap((field) => {
+                                                if (field.type === "group") {
+                                                    return field.fields.map((subField) => ({
+                                                        label: `${field.label} - ${subField.label}`,
+                                                        key: `${field.label} - ${subField.label}`,
+                                                    }));
+                                                }
+                                                return [{ label: field.label, key: field.label }];
+                                            })
+                                        )
+                                        .map(({ label, key }, idx) => (
+                                            <li key={idx}>
+                                                <button
+                                                    className="dropdown-item"
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSelectedField(key);
+                                                        setSearchText(""); // reset search value
+                                                    }}
+                                                >
+                                                    {label}
+                                                </button>
+                                            </li>
+                                        ))}
+                                </ul>
+
+                                {/* Add Filter Button */}
+                                <button
+                                    className="btn btn-outline-primary ms-2"
+                                    type="button"
+                                    onClick={() => {
+                                        if (selectedField && searchText) {
+                                            setFilters([...filters, { field: selectedField, value: searchText }]);
+                                            setSelectedField("");
+                                            setSearchText("");
+                                        }
+                                    }}
+                                >
+                                    <i class="fa-solid fa-filter fa-lg me-2"></i>Add Filter
+                                </button>
+
+                                {/* Reset all filters */}
+                                <button
+                                    className="btn btn-outline-danger ms-2"
+                                    type="button"
+                                    onClick={() => {
+                                        setSelectedField("");
+                                        setSearchText("");
+                                        setFilters([]);
+                                    }}
+                                >
+                                    <i class="fa-solid fa-xmark fa-lg me-2"></i>Reset
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Show active filters */}
+                        <div style={{ margin: '0px 0px 0px 0px', padding: '0px' }}>
+                            {filters.map((f, idx) => (
+                                <span key={idx} className=" me-2" style={{ backgroundColor: 'lightYellow', borderRadius: '10px', padding: '7px 10px', color: 'black', fontWeight: 'bold' }}>
+                                    {f.field}: {f.value}
+                                    <button
+                                        type="button"
+                                        className="btn-close ms-2"
+                                        onClick={() =>
+                                            setFilters(filters.filter((_, i) => i !== idx))
+                                        }
+                                    />
+                                </span>
+                            ))}
+                        </div>
+                    </div>
 
                 </div>
 
 
-                <div className="Filters">
-                    <button className="btn"><i class="fa-solid fa-calendar-days fa-lg  me-2"></i>Start Date</button>
-                    <button className="btn"><i class="fa-solid fa-calendar-days fa-lg  me-2"></i>End Date</button>
-                    <button className="btn"><i class="fa-solid fa-user-tie fa-lg me-2"></i>Operated By</button>
-                </div>
+
 
                 {CaseData.filter(caseItem => caseItem.Closed === false).length > 0 ? (
                     CaseData.filter(caseItem => {
@@ -93,14 +244,28 @@ export default function InProgress() {
                             const type = caseItem.inputFields?.["Type Of Check"];
 
                             if (filterType === "DAR Action") {
-                                return caseItem.checkClose === true;
+                                if (!caseItem.checkClose) return false;
+                            } else if (filterType !== "All") {
+                                if (type !== filterType || caseItem.checkClose) return false;
                             }
+                            for (const { field, value } of filters) {
+                                let fieldValue = null;
+                                if (field.includes(" - ")) {
+                                    const subFieldLabel = field.split(" - ")[1];
+                                    fieldValue = caseItem.inputFields?.[subFieldLabel];
+                                } else {
+                                    fieldValue = caseItem.inputFields?.[field];
+                                }
 
-                            if (filterType === "All") {
-                                return true; // Show everything if filter is All
+                                if (!fieldValue) return false;
+                                if (
+                                    typeof fieldValue === "string" &&
+                                    !fieldValue.toLowerCase().includes(value.toLowerCase())
+                                ) {
+                                    return false;
+                                }
                             }
-
-                            return type === filterType && caseItem.checkClose === false;
+                            return true;
                         }
                         return false;
                     }).map((caseItem, index) => {
@@ -112,18 +277,30 @@ export default function InProgress() {
                                 <div className="Case-OverView">
                                     <div className="Base-Case">
                                         {/* <div>S.No. {caseItem.SNo}</div> */}
-                                        <i class="fa-solid fa-circle-half-stroke fa-xl" style={{ color: '#ffc800' }}></i>
-                                        <div>Type of Check - {caseDetails["Type Of Check"] || "Not filled"}</div>
-                                        <div>Date of Check - {caseDetails["Date Of Check"] || "Not filled"}</div>
-                                        <div>Division - {caseDetails["Division"] || "Not filled"}</div>
-                                        <div>Department - {caseDetails["Department"] || "Not filled"}</div>
+                                        <i className="fa-solid fa-circle-half-stroke fa-xl" style={{ color: '#ffc800' }}></i>
+                                        <div>{caseDetails['PC-DC Number']}</div>
+                                        <div><span style={{ fontWeight: 'bold' }}>DOC :</span> {caseDetails["Date Of Check"] || "Not filled"}</div>
+                                        <div><span style={{ fontWeight: 'bold' }}></span> {caseDetails["Division"] || "Not filled"}</div>
+                                        <div><span style={{ fontWeight: 'bold' }}></span> {caseDetails["Department"] || "Not filled"}</div>
+                                        <div><span style={{ fontWeight: 'bold' }}>Name of CVI :</span> {caseDetails["Name Of Concern VI"] || "Not filled"}</div>
+                                        <div><span style={{ fontWeight: 'bold' }}>Decision :</span> {caseDetails["SDGM Decision/Recommendation"] || "Not filled"}</div>
                                     </div>
-                                    {editMode === caseItem._id ? (
-                                        <button className="btn btn-sm btn-secondary" onClick={() => { setEditMode(null); setUpdatedFields({}); }} > Cancel </button>
-                                    ) : (
-                                        <button className="btn btn-sm btn-warning" style={{ whiteSpace: 'nowrap' }} onClick={() => { setEditMode(caseItem._id); setUpdatedFields(caseItem.inputFields || {}); }} > <i className="fa-solid fa-pen-to-square fa-lg me-2"></i> Edit Case </button>
-                                    )}
-                                    <button className="btn" type="button" data-bs-toggle="collapse" data-bs-target={`#${collapseId}`} aria-expanded="false" aria-controls={collapseId} > <i className="fa-solid fa-square-caret-up fa-rotate-180 fa-lg"></i> </button>
+
+                                    {
+                                        filterType !== "All" &&
+                                        (
+                                            <>
+
+                                                {editMode === caseItem._id ? (
+                                                    <button className="btn btn-sm btn-secondary" onClick={() => { setEditMode(null); setUpdatedFields({}); }} > Cancel </button>
+                                                ) : (
+                                                    <button className="btn btn-sm btn-warning" style={{ whiteSpace: 'nowrap' }} onClick={() => { setEditMode(caseItem._id); setUpdatedFields(caseItem.inputFields || {}); }} > <i className="fa-solid fa-pen-to-square fa-lg me-2"></i> Edit Case </button>
+                                                )}
+                                                <button className="btn" type="button" data-bs-toggle="collapse" data-bs-target={`#${collapseId}`} aria-expanded="false" aria-controls={collapseId} > <i className="fa-solid fa-square-caret-up fa-rotate-180 fa-lg"></i> </button>
+                                            </>
+                                        )
+                                    }
+
 
 
                                 </div>
@@ -132,7 +309,7 @@ export default function InProgress() {
                                     <div className="container-fluid">
                                         <div className="row">
                                             {formSchemas.map((form, formIndex) =>
-                                                form.showIn.includes("PC") &&
+                                                Array.isArray(form.showIn) && form.showIn.includes(filterType) &&
                                                 form.inputFields.map((inputField, index) => (
                                                     <div
                                                         key={`${formIndex}-${index}`}
@@ -253,13 +430,32 @@ export default function InProgress() {
                                                 </>
                                             ) :
                                                 <>
+                                                    {caseItem.checkClose && (
+                                                        <button
+                                                            className="btn btn-sm btn-secondary me-2"
+                                                            onClick={async () => {
+                                                                try {
+                                                                    await axios.put(`http://localhost:3001/transfer-stage/${caseItem._id}`, {
+                                                                        checkClose: false
+                                                                    });
+                                                                    alert('Case moved back to previous stage');
+                                                                    fetchData();
+                                                                } catch (error) {
+                                                                    console.error('Error moving back:', error);
+                                                                    alert('Action failed');
+                                                                }
+                                                            }}
+                                                        >
+                                                            Move back to previous stage
+                                                        </button>
+                                                    )}
                                                     <button className="btn btn-sm btn-danger me-2" onClick={() => closeCase(caseItem._id)} disabled={caseItem.status === 'Closed'} > Close Complete Case </button>
                                                     {!caseItem.checkClose && (
                                                         <button
-                                                            className="btn btn-sm btn-info"
+                                                            className="btn btn-sm btn-info me-2"
                                                             onClick={async () => {
                                                                 try {
-                                                                    const res = await axios.put(`http://localhost:3001/transfer-dar-action/${caseItem._id}`, {
+                                                                    await axios.put(`http://localhost:3001/transfer-stage/${caseItem._id}`, {
                                                                         checkClose: true
                                                                     });
                                                                     alert('Case transferred to DAR Action');
@@ -273,8 +469,6 @@ export default function InProgress() {
                                                             Transfer to DAR Action
                                                         </button>
                                                     )}
-
-
                                                 </>
                                             }
                                         </div>

@@ -18,16 +18,19 @@ export default function Navigation() {
   return (
     <div className='Navigation'>
       <Link className={`btn ${isActive('/')}`} to='/'>
-        <i class="fa-solid fa-house fa-lg me-2"></i> Home
+        <i className="fa-solid fa-house fa-lg me-1"></i> Home
       </Link>
-      <Link className={`btn ${isActive('/new-sheet')}`} to='/new-sheet'>
-        <i className="fa-solid fa-square-plus fa-lg me-2"></i>Register New Case
+      <Link className={`btn ${isActive('/new-case')}`} to='/new-case'>
+        <i className="fa-solid fa-square-plus fa-lg me-2"></i>Register Case
       </Link>
       <Link className={`btn ${isActive('/inProgress')}`} to='/inProgress'>
         <i className="fa-solid fa-circle-dot fa-lg me-1" style={{ color: '#ffc800' }}></i>In Progress
       </Link>
       <Link className={`btn ${isActive('/closedCases')}`} to='/closedCases'>
         <i className="fa-solid fa-circle-dot fa-lg me-1" style={{ color: 'red' }}></i>Closed Cases
+      </Link>
+       <Link className={`btn ${isActive('/Settings')}`} to='/Settings'>
+        <i className="fa-solid fa-gear fa-lg me-1"></i> Settings
       </Link>
       <select value={theme} onChange={(e) => setTheme(e.target.value)} className='btn'>
         <option value="white">☀️ Light</option>

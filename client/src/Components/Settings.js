@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default function AddNewSheet() {
+export default function Settings() {
     const [fields, setFields] = useState([]);
     const [SNo, setSNo] = useState('');
     const [showIn, setShowIn] = useState([]);
@@ -9,6 +9,7 @@ export default function AddNewSheet() {
     const [type, setType] = useState('field');
     const [subFields, setSubFields] = useState([]);
     const [formSchemas, setFormSchemas] = useState([]);
+    const [edit, setEdit] = useState(false);
 
     // For editing
     const [editModalOpen, setEditModalOpen] = useState(false);
@@ -202,11 +203,15 @@ export default function AddNewSheet() {
 
     return (
         <div className="AddNewSheet">
+            <button className='btn btn-sm btn-primary' style={{ width: 'fit-Content' }} onClick={() => setEdit(!edit)}>Edit</button>
             {/* Add New Input Field */}
-            <button className="btn btn-sm btn-outline-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#CollapseInputField" aria-expanded="false" aria-controls="CollapseInputField">
-                Add New Input Field
-            </button>
-
+            {
+                edit && (
+                    <button className="btn btn-sm btn-warning mb-3" style={{width:'fit-content'}} type="button" data-bs-toggle="collapse" data-bs-target="#CollapseInputField" aria-expanded="false" aria-controls="CollapseInputField">
+                        Add New Input Field
+                    </button>
+                )
+            }
             <div className="collapse" id="CollapseInputField">
                 <div className="card card-body">
                     <div className="mb-3">
@@ -267,13 +272,13 @@ export default function AddNewSheet() {
                                 <input
                                     className="form-check-input"
                                     type="checkbox"
-                                    value="PC"
-                                    checked={showIn.includes('PC')}
+                                    value="Preventive Check"
+                                    checked={showIn.includes('Preventive Check')}
                                     onChange={handleCheckboxChange}
                                     id="showin-pc"
                                 />
                                 <label className="form-check-label" htmlFor="showin-pc">
-                                    PC
+                                    Preventive Check
                                 </label>
                             </div>
 
@@ -281,13 +286,13 @@ export default function AddNewSheet() {
                                 <input
                                     className="form-check-input"
                                     type="checkbox"
-                                    value="DC"
-                                    checked={showIn.includes('DC')}
+                                    value="Decoy Check"
+                                    checked={showIn.includes('Decoy Check')}
                                     onChange={handleCheckboxChange}
                                     id="showin-dc"
                                 />
                                 <label className="form-check-label" htmlFor="showin-dc">
-                                    DC
+                                    Decoy Check
                                 </label>
                             </div>
 
@@ -341,17 +346,20 @@ export default function AddNewSheet() {
                                 <div key={`${formIndex}-${index}`} className={inputField.type === 'group' ? 'col-12 mb-3' : 'col-12 col-sm-6 col-md-3 mb-3'}>
                                     <div className="d-flex justify-content-between align-items-center">
                                         <p className='fw-bold'>{inputField.label}</p>
-                                        <div>
-                                            <button type="button" className="btn btn-sm btn-outline-secondary me-1" onClick={() => openEditModal(formIndex, index)}>Edit</button>
-                                            <button
-                                                type="button"
-                                                className="btn delete-button btn-sm btn-danger"
-                                                onClick={() => handleDelete(formIndex, index)}
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
-
+                                        {
+                                            edit && (
+                                                <div>
+                                                    <button type="button" className="btn btn-sm btn-outline-secondary me-1" onClick={() => openEditModal(formIndex, index)}>Edit</button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn delete-button btn-sm btn-danger"
+                                                        onClick={() => handleDelete(formIndex, index)}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            )
+                                        }
                                     </div>
 
                                     {inputField.type === 'group' ? (
@@ -392,7 +400,6 @@ export default function AddNewSheet() {
                             ))
                         )}
                     </div>
-                    <button type="submit" className="btn btn-sm btn-primary mt-3">Submit</button>
                 </div>
             </form>
 
@@ -460,9 +467,10 @@ export default function AddNewSheet() {
                                 )}
 
                                 <div className="mb-3">
+
                                     <label className="form-label">Show In</label>
                                     <div className="d-flex gap-4 flex-wrap">
-                                        {['Case Registration', 'PC', 'DC', 'DAR Action'].map((val) => (
+                                        {['Case Registration', 'Preventive Check', 'Decoy Check', 'Complaint', 'DAR Action'].map((val) => (
                                             <div className="form-check" key={val}>
                                                 <input
                                                     className="form-check-input"

@@ -17,7 +17,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 // Save form template
 app.post('/add-form', async (req, res) => {
@@ -61,7 +61,7 @@ app.post('/post-case', async (req, res) => {
 
 app.get('/get-cases', async (req, res) => {
     try {
-        const cases = await Case.find().sort({ SNo: 1 }); 
+        const cases = await Case.find().sort({ SNo: 1 });
         res.status(200).json(cases);
     } catch (error) {
         console.error('Error fetching cases:', error);
@@ -77,7 +77,7 @@ app.put('/update-case/:id', async (req, res) => {
         const updatedCase = await Case.findByIdAndUpdate(
             caseId,
             { inputFields, Closed },
-            { new: true } 
+            { new: true }
         );
 
         res.status(200).json({ message: "Case updated successfully", updatedCase });
@@ -102,23 +102,23 @@ app.put('/close-case/:id', async (req, res) => {
     }
 });
 
-app.put('/transfer-dar-action/:id', async (req, res) => {
-  const caseId = req.params.id;
+app.put('/transfer-stage/:id', async (req, res) => {
+    const caseId = req.params.id;
+    const { checkClose } = req.body;
 
-  try {
-    const updatedCase = await Case.findByIdAndUpdate(
-      caseId,
-      {
-        checkClose: true
-      },
-      { new: true }
-    );
-    res.json(updatedCase);
-  } catch (err) {
-    console.error('Transfer error:', err);
-    res.status(500).json({ message: 'Error transferring case to DAR Action' });
-  }
+    try {
+        const updatedCase = await Case.findByIdAndUpdate(
+            caseId,
+            { checkClose },
+            { new: true }
+        );
+        res.json(updatedCase);
+    } catch (err) {
+        console.error('Transfer error:', err);
+        res.status(500).json({ message: 'Error updating case status' });
+    }
 });
+
 
 
 app.put('/reopen-case/:caseId', async (req, res) => {
@@ -188,30 +188,30 @@ app.post('/update-field', async (req, res) => {
 
 
 app.delete('/form/:formId/field/:fieldIndex', async (req, res) => {
-  const { formId, fieldIndex } = req.params;
-  const index = parseInt(fieldIndex, 10);
+    const { formId, fieldIndex } = req.params;
+    const index = parseInt(fieldIndex, 10);
 
-  try {
-    const form = await FormSchema.findById(formId);
-    if (!form) {
-      return res.status(404).json({ message: 'Form not found' });
+    try {
+        const form = await FormSchema.findById(formId);
+        if (!form) {
+            return res.status(404).json({ message: 'Form not found' });
+        }
+
+        if (!form.inputFields || index < 0 || index >= form.inputFields.length) {
+            return res.status(400).json({ message: 'Invalid field index' });
+        }
+
+        // Remove the field at index
+        form.inputFields.splice(index, 1);
+
+        // Save the updated form
+        await form.save();
+
+        res.status(200).json({ message: 'Field deleted successfully', form });
+    } catch (error) {
+        console.error('Error deleting field:', error);
+        res.status(500).json({ message: 'Server error' });
     }
-
-    if (!form.inputFields || index < 0 || index >= form.inputFields.length) {
-      return res.status(400).json({ message: 'Invalid field index' });
-    }
-
-    // Remove the field at index
-    form.inputFields.splice(index, 1);
-
-    // Save the updated form
-    await form.save();
-
-    res.status(200).json({ message: 'Field deleted successfully', form });
-  } catch (error) {
-    console.error('Error deleting field:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
 });
 
 
