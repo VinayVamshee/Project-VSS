@@ -5,13 +5,8 @@ const cors = require('cors');
 
 const FormSchema = require('./Models/Form');
 const Case = require('./Models/Case');
+const connectDB = require('./connectDB');
 
-const uri = process.env.MONGODB_URL;
-
-const connectDB = () => {
-    console.log("DataBase Connected");
-    return mongoose.connect(uri);
-};
 
 const app = express();
 app.use(cors());
