@@ -278,18 +278,38 @@ export default function Navigation() {
 
       {/* Theme Selector */}
       <select value={theme} onChange={(e) => setTheme(e.target.value)} className='btn'>
-        <option value="white">☀️ Light</option>
-        <option value="black">🌑 Dark</option>
-        <option value="red">🩸 Blood</option>
-        <option value="blue">🌊 Ocean</option>
-        <option value="pink">🌸 Rose Blush</option>
-        <option value="yellow">🌞 Sunbeam</option>
-        <option value="brown">🍂 Earthy</option>
-        <option value="green">🌿 Forest</option>
-        <option value="purple">💜 Lavender</option>
-        <option value="orange">🍊 Sunset</option>
-        <option value="grey">🌫️ Fog</option>
-        <option value="aqua">🐬 Aqua Breeze</option>
+       <option value="white">☀️ Light</option>
+  <option value="black">🌑 Dark</option>
+  <option value="red">🩸 Blood</option>
+  <option value="blue">🌊 Ocean</option>
+  <option value="pink">🌸 Rose Blush</option>
+  <option value="yellow">🌞 Sunbeam</option>
+  <option value="brown">🍂 Earthy</option>
+  <option value="green">🌿 Forest</option>
+  <option value="purple">💜 Lavender</option>
+  <option value="orange">🍊 Sunset</option>
+  <option value="grey">🌫️ Fog</option>
+  <option value="aqua">🐬 Aqua Breeze</option>
+  <option value="cool-silver">🧊 Cool Silver</option>
+  <option value="mint">🍀 Mint</option>
+
+  {/* Earth Themes */}
+  <option value="earth-tones">🌰 Earth Tones</option>
+  <option value="mountain-stone">🪨 Mountain Stone</option>
+  <option value="sand-dune">🏜️ Sand Dune</option>
+  <option value="forest-floor">🍃 Forest Floor</option>
+  <option value="forest">🌲 Deep Forest</option>
+
+  {/* Space / Galaxy Themes */}
+  <option value="indigo-night">🫐 Indigo Night</option>
+  <option value="galaxy">🌌 Galaxy</option>
+  <option value="nebula-dream">💫 Nebula Dream</option>
+  <option value="cosmic-horizon">🌠 Cosmic Horizon</option>
+  <option value="stellar-sunset">🌇 Stellar Sunset</option>
+  <option value="aurora-borealis">🌈 Aurora Borealis</option>
+  <option value="supernova">💥 Supernova Burst</option>
+<option value="cosmic-neon">🌌 Cosmic Neon</option>
+<option value="stellar-candy">🍬 Stellar Candy</option>
       </select>
     </div>
   );
