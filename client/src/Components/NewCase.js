@@ -1,14 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export default function NewCase() {
+    const navigate = useNavigate();
+    // eslint-disable-next-line 
+    const [IsUserLoggedIn, setIsUserLoggedIn] = useState(false);
+    // eslint-disable-next-line 
+    const [IsAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+    useEffect(() => {
+        const userToken = localStorage.getItem('userToken');
+        const adminToken = localStorage.getItem('adminToken');
+
+        if (!userToken && !adminToken) {
+            navigate('/');
+            return;
+        }
+
+        if (userToken) {
+            setIsUserLoggedIn(true);
+        } else {
+            setIsUserLoggedIn(false);
+        }
+
+        if (adminToken) {
+            setIsAdminLoggedIn(true);
+        } else {
+            setIsAdminLoggedIn(false);
+        }
+    }, [navigate]);
     const [formSchemas, setFormSchemas] = useState([]);
 
     // Fetch forms once
     useEffect(() => {
         const fetchForms = async () => {
             try {
-                const response = await axios.get('http://localhost:3001/get-forms');
+                const response = await axios.get('https://vss-server.vercel.app/get-forms');
                 const sortedForms = response.data.sort((a, b) => a.SNo - b.SNo);
                 setFormSchemas(sortedForms);
             } catch (err) {
@@ -32,7 +59,7 @@ export default function NewCase() {
     const handleCaseSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3001/post-case', {
+            await axios.post('https://vss-server.vercel.app/post-case', {
                 SNo: Date.now(),
                 inputFields: formData
             });
@@ -65,7 +92,7 @@ export default function NewCase() {
                                                 <div key={idx} className="col-12 col-sm-6 col-md-3 mb-2">
                                                     <label>{subField.label}:</label>
                                                     <input
-                                                        type="text"
+                                                        type={subField.label.toLowerCase().includes("date") ? "date" : "text"}
                                                         className="form-control"
                                                         placeholder={`Enter ${subField.label}`}
                                                         onChange={(e) => handleChange(subField.label, e.target.value)}
@@ -87,7 +114,7 @@ export default function NewCase() {
                                         </select>
                                     ) : (
                                         <input
-                                            type="text"
+                                            type={inputField.label.toLowerCase().includes("date") ? "date" : "text"}
                                             className="form-control"
                                             placeholder={`Enter ${inputField.label}`}
                                             onChange={(e) => handleChange(inputField.label, e.target.value)}

@@ -4,6 +4,11 @@
   font-size: 15px;
 }
 
+.modal {
+  z-index: 10000;
+  background-color: rgba(0, 0, 0, 0.51);
+}
+
 :root {
   --navigation-color: #333;
   --bg-color: #F7FAFE;
@@ -247,6 +252,24 @@
   --vigilance-text: #006064;
 }
 
+.select-icon {
+  transition: color 0.3s ease;
+}
+
+.select-icon.rotate {
+  animation: rotate360 0.5s ease;
+}
+
+@keyframes rotate360 {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
 .Navigation .btn {
   background-color: var(--btn-bg);
   color: var(--text-color);
@@ -337,7 +360,7 @@
 
   position: sticky;
   top: 0px;
-  z-index: 100;
+  z-index: 10;
 
   background-color: var(--bg-color);
 }

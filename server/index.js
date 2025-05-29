@@ -2,22 +2,22 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+
 
 const FormSchema = require('./Models/Form');
 const Case = require('./Models/Case');
+const connectDB = require('./connectDB');
+const User = require('./Models/User');
+const Admin = require('./Models/Admin');
 
-const uri = process.env.MONGODB_URL;
-
-const connectDB = () => {
-    console.log("DataBase Connected");
-    return mongoose.connect(uri);
-};
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT;
+const secret = process.env.SECRET_KEY;
 
 // Save form template
 app.post('/add-form', async (req, res) => {
@@ -213,6 +213,100 @@ app.delete('/form/:formId/field/:fieldIndex', async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
+
+app.post('/user', async (req, res) => {
+    try {
+        const user = new User(req.body);
+        await user.save();
+        res.status(201).send(user);
+    } catch (err) {
+        res.status(400).send(err);
+    }
+});
+
+app.put('/user/:id', async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.send(user);
+    } catch (err) {
+        res.status(400).send(err);
+    }
+});
+
+app.delete('/user/:id', async (req, res) => {
+    try {
+        await User.findByIdAndDelete(req.params.id);
+        res.send({ message: 'User deleted' });
+    } catch (err) {
+        res.status(400).send(err);
+    }
+});
+
+// --- Admin Routes --- //
+app.post('/admin', async (req, res) => {
+    try {
+        const admin = new Admin(req.body);
+        await admin.save();
+        res.status(201).send(admin);
+    } catch (err) {
+        res.status(400).send(err);
+    }
+});
+
+app.put('/admin/:id', async (req, res) => {
+    try {
+        const admin = await Admin.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.send(admin);
+    } catch (err) {
+        res.status(400).send(err);
+    }
+});
+
+app.delete('/admin/:id', async (req, res) => {
+    try {
+        await Admin.findByIdAndDelete(req.params.id);
+        res.send({ message: 'Admin deleted' });
+    } catch (err) {
+        res.status(400).send(err);
+    }
+});
+
+
+// --- User Login --- //
+app.post('/user/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  const user = await User.findOne({ username, password });
+  if (!user) return res.status(401).send({ message: 'Invalid credentials' });
+
+  const token = jwt.sign({ id: user._id, role: user.role }, secret);
+  res.send({ token, role: user.role });  // send role directly
+});
+
+
+// --- Admin Login --- //
+app.post('/admin/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    const admin = await Admin.findOne({ username, password });
+    if (!admin) return res.status(401).send({ message: 'Invalid credentials' });
+
+    const token = jwt.sign({ id: admin._id, role: 'admin' }, secret);
+    res.send({ token, admin });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

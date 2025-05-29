@@ -1,7 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export default function Settings() {
+    const navigate = useNavigate();
+    const [IsAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+    useEffect(() => {
+        const adminToken = localStorage.getItem('adminToken');
+        if (!adminToken) {
+            navigate('/');
+            return;
+        }
+        if (adminToken) {
+            setIsAdminLoggedIn(true);
+        } else {
+            setIsAdminLoggedIn(false);
+        }
+    }, [navigate]);
+
+
     const [fields, setFields] = useState([]);
     const [SNo, setSNo] = useState('');
     const [showIn, setShowIn] = useState([]);
@@ -21,7 +38,7 @@ export default function Settings() {
     useEffect(() => {
         const fetchForms = async () => {
             try {
-                const response = await axios.get('http://localhost:3001/get-forms');
+                const response = await axios.get('https://vss-server.vercel.app/get-forms');
                 const sortedForms = response.data.sort((a, b) => a.SNo - b.SNo);
                 setFormSchemas(sortedForms);
             } catch (err) {
@@ -50,7 +67,7 @@ export default function Settings() {
                 showIn: showIn
             };
 
-            await axios.post('http://localhost:3001/add-form', payload);
+            await axios.post('https://vss-server.vercel.app/add-form', payload);
             alert('Form submitted successfully!');
             setSNo('');
             setFields([]);
@@ -74,7 +91,7 @@ export default function Settings() {
     const handleCaseSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3001/post-case', {
+            await axios.post('https://vss-server.vercel.app/post-case', {
                 SNo: Date.now(),
                 inputFields: formData
             });
@@ -150,7 +167,7 @@ export default function Settings() {
 
             // Assume your backend expects form index and field index to identify what to update,
             // plus the updated field data
-            await axios.post('http://localhost:3001/update-field', {
+            await axios.post('https://vss-server.vercel.app/update-field', {
                 formId: formSchemas[editFormIndex]._id,  // pass MongoDB id here
                 fieldIndex: editFieldIndex,
                 updatedField: updatedField,
@@ -178,7 +195,7 @@ export default function Settings() {
             const formId = formSchemas[formIndex]._id; // MongoDB form _id
 
             // Call backend DELETE endpoint with formId and fieldIndex in the URL
-            await axios.delete(`http://localhost:3001/form/${formId}/field/${fieldIndex}`);
+            await axios.delete(`https://vss-server.vercel.app/form/${formId}/field/${fieldIndex}`);
 
             // On success, update local state by removing the field locally
             const updatedForms = [...formSchemas];
@@ -207,7 +224,7 @@ export default function Settings() {
             {/* Add New Input Field */}
             {
                 edit && (
-                    <button className="btn btn-sm btn-warning mb-3" style={{width:'fit-content'}} type="button" data-bs-toggle="collapse" data-bs-target="#CollapseInputField" aria-expanded="false" aria-controls="CollapseInputField">
+                    <button className="btn btn-sm btn-warning mb-3" style={{ width: 'fit-content' }} type="button" data-bs-toggle="collapse" data-bs-target="#CollapseInputField" aria-expanded="false" aria-controls="CollapseInputField">
                         Add New Input Field
                     </button>
                 )
@@ -368,7 +385,7 @@ export default function Settings() {
                                                 <div key={idx} className="col-12 col-sm-6 col-md-3 mb-2">
                                                     <label>{subField.label}:</label>
                                                     <input
-                                                        type="text"
+                                                        type={subField.label.toLowerCase().includes("date") ? "date" : "text"}
                                                         className="form-control"
                                                         placeholder={`Enter ${subField.label}`}
                                                         onChange={(e) => handleChange(subField.label, e.target.value)}
@@ -390,7 +407,7 @@ export default function Settings() {
                                         </select>
                                     ) : (
                                         <input
-                                            type="text"
+                                            type={inputField.label.toLowerCase().includes("date") ? "date" : "text"}
                                             className="form-control"
                                             placeholder={`Enter ${inputField.label}`}
                                             onChange={(e) => handleChange(inputField.label, e.target.value)}

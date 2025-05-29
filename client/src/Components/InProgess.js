@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import * as XLSX from "xlsx";
 
 export default function InProgress() {
+    const navigate = useNavigate();
     const [CaseData, setCaseData] = useState([]);
     const [formSchemas, setFormSchemas] = useState([]);
     const [editMode, setEditMode] = useState(null);
@@ -11,18 +14,46 @@ export default function InProgress() {
     const [selectedField, setSelectedField] = useState("");
     const [searchText, setSearchText] = useState("");
 
+    const [userRole, setUserRole] = useState('');
+     // eslint-disable-next-line 
+    const [IsUserLoggedIn, setIsUserLoggedIn] = useState(false);
+    const [IsAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
+    useEffect(() => {
+        const userToken = localStorage.getItem('userToken');
+        const adminToken = localStorage.getItem('adminToken');
+        const role = localStorage.getItem('userRole');
+
+        if (!userToken && !adminToken) {
+            navigate('/');
+            return;
+        }
+
+        if (userToken) {
+            setIsUserLoggedIn(true);
+            setUserRole(role || '');
+        } else {
+            setIsUserLoggedIn(false);
+            setUserRole('');
+        }
+
+        if (adminToken) {
+            setIsAdminLoggedIn(true);
+        } else {
+            setIsAdminLoggedIn(false);
+        }
+    }, [navigate]);
 
 
     const fetchData = async () => {
         try {
             // Fetch cases
-            const caseRes = await axios.get('http://localhost:3001/get-cases');
+            const caseRes = await axios.get('https://vss-server.vercel.app/get-cases');
             const sortedCases = caseRes.data.sort((a, b) => a.SNo - b.SNo);
             setCaseData(sortedCases);
 
             // Fetch form schema
-            const formRes = await axios.get('http://localhost:3001/get-forms');
+            const formRes = await axios.get('https://vss-server.vercel.app/get-forms');
             const sortedForms = formRes.data.sort((a, b) => a.SNo - b.SNo);
             setFormSchemas(sortedForms);
         } catch (err) {
@@ -42,7 +73,7 @@ export default function InProgress() {
 
         if (confirmation) {
             try {
-                await axios.put(`http://localhost:3001/close-case/${caseId}`);
+                await axios.put(`https://vss-server.vercel.app/close-case/${caseId}`);
                 alert('Case closed successfully');
                 setCaseData((prevData) =>
                     prevData.map((caseItem) =>
@@ -58,6 +89,71 @@ export default function InProgress() {
         }
     };
 
+    const filteredCases = CaseData.filter(caseItem => {
+        if (caseItem.Closed === false) {
+            const type = caseItem.inputFields?.["Type Of Check"];
+
+            if (filterType === "DAR Action") {
+                if (!caseItem.checkClose) return false;
+            } else if (filterType !== "All") {
+                if (type !== filterType || caseItem.checkClose) return false;
+            }
+
+            for (const { field, value } of filters) {
+                let fieldValue = null;
+                if (field.includes(" - ")) {
+                    const subFieldLabel = field.split(" - ")[1];
+                    fieldValue = caseItem.inputFields?.[subFieldLabel];
+                } else {
+                    fieldValue = caseItem.inputFields?.[field];
+                }
+
+                if (!fieldValue) return false;
+                if (
+                    typeof fieldValue === "string" &&
+                    !fieldValue.toLowerCase().includes(value.toLowerCase())
+                ) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        return false;
+    });
+
+
+    const [selectedCases, setSelectedCases] = useState([]);
+    const [selectAll, setSelectAll] = useState(false);
+
+    const handleDownloadExcel = () => {
+        const selectedCaseData = CaseData.filter(caseItem => selectedCases.includes(caseItem._id));
+
+        const formattedData = selectedCaseData.map(caseItem => {
+            const flatCase = {
+                _id: caseItem._id,
+                Closed: caseItem.Closed,
+                checkClose: caseItem.checkClose,
+            };
+
+            // Flatten inputFields
+            if (caseItem.inputFields) {
+                Object.entries(caseItem.inputFields).forEach(([key, value]) => {
+                    flatCase[key] = value;
+                });
+            }
+
+            return flatCase;
+        });
+
+        const ws = XLSX.utils.json_to_sheet(formattedData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Cases");
+
+        const today = new Date().toISOString().split("T")[0];
+        XLSX.writeFile(wb, `Reports - ${today}.xlsx`);
+    };
+
     return (
         <div className="Home">
 
@@ -66,22 +162,22 @@ export default function InProgress() {
                 <div className='Filter-Grid'>
 
                     <div className='Filters'>
-                        <button style={{fontWeight: 'bold'}} className={`btn ${filterType === "All" ? "active" : ""}`} onClick={() => setFilterType("All")} >
+                        <button style={{ fontWeight: 'bold' }} className={`btn ${filterType === "All" ? "active" : ""}`} onClick={() => setFilterType("All")} >
                             All
                         </button>
-                        <button style={{fontWeight: 'bold'}} className={`btn ${filterType === "Preventive Check" ? "active" : ""}`} onClick={() => setFilterType("Preventive Check")} >
+                        <button style={{ fontWeight: 'bold' }} className={`btn ${filterType === "Preventive Check" ? "active" : ""}`} onClick={() => setFilterType("Preventive Check")} >
                             Preventive Check
                         </button>
 
-                        <button style={{fontWeight: 'bold'}} className={`btn ${filterType === "Decoy Check" ? "active" : ""}`} onClick={() => setFilterType("Decoy Check")} >
+                        <button style={{ fontWeight: 'bold' }} className={`btn ${filterType === "Decoy Check" ? "active" : ""}`} onClick={() => setFilterType("Decoy Check")} >
                             Decoy Check
                         </button>
 
-                        <button style={{fontWeight: 'bold'}} className={`btn ${filterType === "Complaint" ? "active" : ""}`} onClick={() => setFilterType("Complaint")} >
+                        <button style={{ fontWeight: 'bold' }} className={`btn ${filterType === "Complaint" ? "active" : ""}`} onClick={() => setFilterType("Complaint")} >
                             Complaints
                         </button>
 
-                        <button style={{fontWeight: 'bold'}} className={`btn ${filterType === "DAR Action" ? "active" : ""}`} onClick={() => setFilterType("DAR Action")} >
+                        <button style={{ fontWeight: 'bold' }} className={`btn ${filterType === "DAR Action" ? "active" : ""}`} onClick={() => setFilterType("DAR Action")} >
                             DAR Action
                         </button>
                     </div>
@@ -155,7 +251,7 @@ export default function InProgress() {
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false"
                                 >
-                                    <i class="fa-brands fa-searchengin fa-xl me-2"></i>{selectedField || "Select field"}
+                                    <i className="fa-brands fa-searchengin fa-xl me-2"></i>{selectedField || "Select field"}
                                 </button>
                                 <ul className="dropdown-menu dropdown-menu-end">
                                     {formSchemas
@@ -198,12 +294,12 @@ export default function InProgress() {
                                         }
                                     }}
                                 >
-                                    <i class="fa-solid fa-filter fa-lg me-2"></i>Add Filter
+                                    <i className="fa-solid fa-filter fa-lg me-2"></i>Add Filter
                                 </button>
 
                                 {/* Reset all filters */}
                                 <button
-                                    className="btn btn-outline-danger ms-2"
+                                    className="btn btn-outline-danger mx-2"
                                     type="button"
                                     onClick={() => {
                                         setSelectedField("");
@@ -211,9 +307,28 @@ export default function InProgress() {
                                         setFilters([]);
                                     }}
                                 >
-                                    <i class="fa-solid fa-xmark fa-lg me-2"></i>Reset
+                                    <i className="fa-solid fa-xmark fa-lg me-2"></i>Reset
+                                </button>
+                                <div className='btn me-2'>
+                                    <input type="checkbox" checked={selectAll} onChange={(e) => {
+                                        const checked = e.target.checked;
+                                        setSelectAll(checked);
+                                        if (checked) {
+                                            const allVisibleCaseIds = filteredCases.map((c) => c._id);
+                                            setSelectedCases(allVisibleCaseIds);
+                                        } else {
+                                            setSelectedCases([]);
+                                        }
+                                    }}
+                                    />
+                                    <label className="ms-2">Select All</label>
+                                </div>
+                                <button className="btn" onClick={handleDownloadExcel}>
+                                    <i className="fa-solid fa-file-excel me-2"></i> Download Excel
                                 </button>
                             </div>
+
+
                         </div>
 
                         {/* Show active filters */}
@@ -238,46 +353,32 @@ export default function InProgress() {
 
 
 
-                {CaseData.filter(caseItem => caseItem.Closed === false).length > 0 ? (
-                    CaseData.filter(caseItem => {
-                        if (caseItem.Closed === false) {
-                            const type = caseItem.inputFields?.["Type Of Check"];
-
-                            if (filterType === "DAR Action") {
-                                if (!caseItem.checkClose) return false;
-                            } else if (filterType !== "All") {
-                                if (type !== filterType || caseItem.checkClose) return false;
-                            }
-                            for (const { field, value } of filters) {
-                                let fieldValue = null;
-                                if (field.includes(" - ")) {
-                                    const subFieldLabel = field.split(" - ")[1];
-                                    fieldValue = caseItem.inputFields?.[subFieldLabel];
-                                } else {
-                                    fieldValue = caseItem.inputFields?.[field];
-                                }
-
-                                if (!fieldValue) return false;
-                                if (
-                                    typeof fieldValue === "string" &&
-                                    !fieldValue.toLowerCase().includes(value.toLowerCase())
-                                ) {
-                                    return false;
-                                }
-                            }
-                            return true;
-                        }
-                        return false;
-                    }).map((caseItem, index) => {
+                {filteredCases.length > 0 ? (
+                    filteredCases.map((caseItem, index) => {
                         const collapseId = `collapseCaseInfo-${index}`;
                         const caseDetails = caseItem.inputFields || {};
-
                         return (
                             <div key={index} className="Case-Item" style={{ animationDelay: `${index * 0.1}s` }}>
                                 <div className="Case-OverView">
                                     <div className="Base-Case">
-                                        {/* <div>S.No. {caseItem.SNo}</div> */}
-                                        <i className="fa-solid fa-circle-half-stroke fa-xl" style={{ color: '#ffc800' }}></i>
+                                        <i
+                                            className={`fa-solid fa-circle-half-stroke fa-xl select-icon ${selectedCases.includes(caseItem._id) ? 'rotate' : ''}`}
+                                            style={{
+                                                color: selectedCases.includes(caseItem._id) ? 'blue' : 'goldenrod',
+                                                cursor: 'pointer',
+                                                transition: 'color 0.3s ease',
+                                            }}
+                                            onClick={(e) => {
+                                                e.currentTarget.classList.add('rotate');
+                                                setSelectedCases((prev) => {
+                                                    if (prev.includes(caseItem._id)) {
+                                                        return prev.filter(id => id !== caseItem._id);
+                                                    } else {
+                                                        return [...prev, caseItem._id];
+                                                    }
+                                                });
+                                            }}
+                                        ></i>
                                         <div>{caseDetails['PC-DC Number']}</div>
                                         <div><span style={{ fontWeight: 'bold' }}>DOC :</span> {caseDetails["Date Of Check"] || "Not filled"}</div>
                                         <div><span style={{ fontWeight: 'bold' }}></span> {caseDetails["Division"] || "Not filled"}</div>
@@ -288,18 +389,44 @@ export default function InProgress() {
 
                                     {
                                         filterType !== "All" &&
-                                        (
+                                        (IsAdminLoggedIn || filterType === userRole) && (
                                             <>
-
                                                 {editMode === caseItem._id ? (
-                                                    <button className="btn btn-sm btn-secondary" onClick={() => { setEditMode(null); setUpdatedFields({}); }} > Cancel </button>
+                                                    <button
+                                                        className="btn btn-sm btn-secondary"
+                                                        onClick={() => {
+                                                            setEditMode(null);
+                                                            setUpdatedFields({});
+                                                        }}
+                                                    >
+                                                        Cancel
+                                                    </button>
                                                 ) : (
-                                                    <button className="btn btn-sm btn-warning" style={{ whiteSpace: 'nowrap' }} onClick={() => { setEditMode(caseItem._id); setUpdatedFields(caseItem.inputFields || {}); }} > <i className="fa-solid fa-pen-to-square fa-lg me-2"></i> Edit Case </button>
+                                                    <button
+                                                        className="btn btn-sm btn-warning"
+                                                        style={{ whiteSpace: 'nowrap' }}
+                                                        onClick={() => {
+                                                            setEditMode(caseItem._id);
+                                                            setUpdatedFields(caseItem.inputFields || {});
+                                                        }}
+                                                    >
+                                                        <i className="fa-solid fa-pen-to-square fa-lg me-2"></i> Edit Case
+                                                    </button>
                                                 )}
-                                                <button className="btn" type="button" data-bs-toggle="collapse" data-bs-target={`#${collapseId}`} aria-expanded="false" aria-controls={collapseId} > <i className="fa-solid fa-square-caret-up fa-rotate-180 fa-lg"></i> </button>
+                                                <button
+                                                    className="btn"
+                                                    type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target={`#${collapseId}`}
+                                                    aria-expanded="false"
+                                                    aria-controls={collapseId}
+                                                >
+                                                    <i className="fa-solid fa-square-caret-up fa-rotate-180 fa-lg"></i>
+                                                </button>
                                             </>
                                         )
                                     }
+
 
 
 
@@ -323,7 +450,7 @@ export default function InProgress() {
                                                                         <div key={idx} className="col-12 col-sm-6 col-md-3 mb-2">
                                                                             <label>{subField.label}:</label>
                                                                             <input
-                                                                                type="text"
+                                                                                type={subField.label.toLowerCase().includes("date") ? "date" : "text"}
                                                                                 className="form-control"
                                                                                 placeholder={`Enter ${subField.label}`}
                                                                                 value={
@@ -377,7 +504,7 @@ export default function InProgress() {
                                                             <div>
                                                                 <p className="fw-bold">{inputField.label}:</p>
                                                                 <input
-                                                                    type="text"
+                                                                    type={inputField.label.toLowerCase().includes("date") ? "date" : "text"}
                                                                     className="form-control"
                                                                     placeholder={`Enter ${inputField.label}`}
                                                                     value={
@@ -410,7 +537,7 @@ export default function InProgress() {
                                                         className="btn btn-sm btn-success me-2"
                                                         onClick={async () => {
                                                             try {
-                                                                await axios.put(`http://localhost:3001/update-case/${caseItem._id}`, {
+                                                                await axios.put(`https://vss-server.vercel.app/update-case/${caseItem._id}`, {
                                                                     inputFields: updatedFields,
                                                                     closed: caseItem.Closed
                                                                 });
@@ -435,7 +562,7 @@ export default function InProgress() {
                                                             className="btn btn-sm btn-secondary me-2"
                                                             onClick={async () => {
                                                                 try {
-                                                                    await axios.put(`http://localhost:3001/transfer-stage/${caseItem._id}`, {
+                                                                    await axios.put(`https://vss-server.vercel.app/transfer-stage/${caseItem._id}`, {
                                                                         checkClose: false
                                                                     });
                                                                     alert('Case moved back to previous stage');
@@ -455,7 +582,7 @@ export default function InProgress() {
                                                             className="btn btn-sm btn-info me-2"
                                                             onClick={async () => {
                                                                 try {
-                                                                    await axios.put(`http://localhost:3001/transfer-stage/${caseItem._id}`, {
+                                                                    await axios.put(`https://vss-server.vercel.app/transfer-stage/${caseItem._id}`, {
                                                                         checkClose: true
                                                                     });
                                                                     alert('Case transferred to DAR Action');
