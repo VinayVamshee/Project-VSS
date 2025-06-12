@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Settings() {
     const navigate = useNavigate();
+    // eslint-disable-next-line
     const [IsAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
     useEffect(() => {
         const adminToken = localStorage.getItem('adminToken');

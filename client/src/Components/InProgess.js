@@ -189,6 +189,8 @@ export default function InProgress() {
         documentTitle: 'Selected Cases Report',
     });
 
+    const [viewMode, setViewMode] = useState("table");
+
     const [openCollapses, setOpenCollapses] = useState([]);
 
     return (
@@ -414,13 +416,31 @@ export default function InProgress() {
                                         </div>
                                     ))}
                                 </div>
+
                             </div>
 
                             <div className="modal-footer bg-light rounded-bottom-4">
                                 <button type="button" className="btn btn-outline-secondary" data-bs-dismiss="modal">
                                     Cancel
                                 </button>
-                                <button type="button" className="btn btn-primary" data-bs-dismiss="modal" onClick={handlePrint}>
+                                {/* 🔘 View Mode Selector */}
+                                <div className="d-flex justify-content-end align-items-center mb-2">
+                                    <label className="me-2 fw-semibold">View Mode:</label>
+                                    <select
+                                        className="form-select w-auto"
+                                        value={viewMode}
+                                        onChange={(e) => setViewMode(e.target.value)}
+                                    >
+                                        <option value="table">Table</option>
+                                        <option value="grid">Grid</option>
+                                    </select>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    data-bs-dismiss="modal"
+                                    onClick={() => handlePrint(viewMode)} // 👈 Pass mode to print
+                                >
                                     <i className="bi bi-printer me-1"></i> Print Selected
                                 </button>
                             </div>
@@ -694,7 +714,7 @@ export default function InProgress() {
 
 
             <div style={{ display: "none" }}>
-                <ReportToPrint ref={componentRef} selectedCaseData={selectedCaseData} selectedFields={selectedFields} />
+                <ReportToPrint ref={componentRef} selectedCaseData={selectedCaseData} selectedFields={selectedFields} viewMode={viewMode} />
             </div>
         </div>
     );

@@ -1103,3 +1103,45 @@ button {
 @page {
   size: landscape;
 }
+
+/* Ensure clean page breaks between cards in PDF */
+.page-break {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  background: white;
+}
+
+/* Reduce padding/margin for tighter print layout */
+@media print {
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .grid-print-view {
+    padding: 0;
+    margin: 0;
+  }
+
+  .page-break {
+    page-break-after: always;
+    border: 1px solid #ccc;
+    box-shadow: none !important;
+    margin-bottom: 20px;
+  }
+
+  h5 {
+    font-size: 1.2rem;
+  }
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin-bottom: 0.5rem;
+  }
+}
