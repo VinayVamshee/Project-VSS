@@ -182,18 +182,25 @@ export default function ClosedCases() {
     const [allFieldLabels, setAllFieldLabels] = useState([]);
 
     useEffect(() => {
-        const labels = new Set();
-        selectedCaseData.forEach((caseItem) => {
-            const fields = caseItem.inputFields || {};
-            Object.keys(fields).forEach(label => labels.add(label));
+        const labelSet = new Set();
+        formSchemas.forEach((form) => {
+            form.inputFields.forEach((field) => {
+                if (field.type === "group") {
+                    field.fields.forEach((subField) => {
+                        labelSet.add(subField.label);
+                    });
+                } else {
+                    labelSet.add(field.label);
+                }
+            });
         });
 
-        const allLabelsArray = [...labels];
+        const allLabelsArray = [...labelSet];
 
-        setAllFieldLabels(prev =>
+        setAllFieldLabels((prev) =>
             JSON.stringify(prev) !== JSON.stringify(allLabelsArray) ? allLabelsArray : prev
         );
-    }, [selectedCaseData]);
+    }, [formSchemas]);
 
     const toggleFieldSelection = (label) => {
         setSelectedFields((prev) =>
@@ -254,7 +261,7 @@ export default function ClosedCases() {
                                         aria-expanded="false"
                                     >
                                         <i className="bi bi-calendar-range me-2"></i>
-                                        {selectedDateRangeField || "Select date field"}
+                                        {selectedDateRangeField || "Select Date Field"}
                                     </button>
 
                                     <ul className="dropdown-menu dropdown-menu-end">
@@ -295,47 +302,45 @@ export default function ClosedCases() {
                                     </ul>
 
                                     {/* Date inputs shown only after field is selected */}
-                                    {selectedDateRangeField && (
-                                        <>
-                                            <input
-                                                type="date"
-                                                className="form-control"
-                                                placeholder="From date"
-                                                value={dateRange.from}
-                                                onChange={(e) =>
-                                                    setDateRange({ ...dateRange, from: e.target.value })
-                                                }
-                                            />
-                                            <input
-                                                type="date"
-                                                className="form-control"
-                                                placeholder="To date"
-                                                value={dateRange.to}
-                                                onChange={(e) =>
-                                                    setDateRange({ ...dateRange, to: e.target.value })
-                                                }
-                                            />
-                                            <button
-                                                className="btn btn-outline-primary"
-                                                type="button"
-                                                onClick={() => {
-                                                    if (selectedDateRangeField && dateRange.from && dateRange.to) {
-                                                        setFilters([
-                                                            ...filters,
-                                                            {
-                                                                field: selectedDateRangeField,
-                                                                value: `${dateRange.from} to ${dateRange.to}`,
-                                                            },
-                                                        ]);
-                                                        setSelectedDateRangeField("");
-                                                        setDateRange({ from: "", to: "" });
-                                                    }
-                                                }}
-                                            >
-                                                <i className="fa-solid fa-filter me-2"></i>Add Date Filter
-                                            </button>
-                                        </>
-                                    )}
+                                    <label className="btn">From Date</label>
+                                    <input
+                                        type="date"
+                                        className="form-control"
+                                        placeholder="From date"
+                                        value={dateRange.from}
+                                        onChange={(e) =>
+                                            setDateRange({ ...dateRange, from: e.target.value })
+                                        }
+                                    />
+                                    <label className="btn ms-1">To Date</label>
+                                    <input
+                                        type="date"
+                                        className="form-control"
+                                        placeholder="To date"
+                                        value={dateRange.to}
+                                        onChange={(e) =>
+                                            setDateRange({ ...dateRange, to: e.target.value })
+                                        }
+                                    />
+                                    <button
+                                        className="btn btn-outline-primary"
+                                        type="button"
+                                        onClick={() => {
+                                            if (selectedDateRangeField && dateRange.from && dateRange.to) {
+                                                setFilters([
+                                                    ...filters,
+                                                    {
+                                                        field: selectedDateRangeField,
+                                                        value: `${dateRange.from} to ${dateRange.to}`,
+                                                    },
+                                                ]);
+                                                setSelectedDateRangeField("");
+                                                setDateRange({ from: "", to: "" });
+                                            }
+                                        }}
+                                    >
+                                        <i className="fa-solid fa-filter me-2"></i>Add Date Filter
+                                    </button>
                                 </div>
 
                                 {/* Dynamic input box or select based on selected field */}
@@ -502,7 +507,7 @@ export default function ClosedCases() {
                 </div>
 
                 <div className="modal fade" id="fieldSelectModal" tabIndex="-1" aria-labelledby="fieldSelectModalLabel" aria-hidden="true">
-                    <div className="modal-dialog modal-dialog-scrollable modal-lg">
+                    <div className="modal-dialog modal-dialog-scrollable modal-xl">
                         <div className="modal-content border-0 shadow-sm rounded-4">
                             <div className="modal-header text-white rounded-top-4">
                                 <h5 className="modal-title" id="fieldSelectModalLabel">
@@ -531,7 +536,7 @@ export default function ClosedCases() {
 
                                 <div className="row">
                                     {allFieldLabels.map((label, idx) => (
-                                        <div className="col-12 col-md-6 mb-1" key={idx}>
+                                        <div className="col-12 col-md-4 mb-1" key={idx}>
                                             <label className="p-2 list-group-item d-flex align-items-center gap-2 border rounded shadow-sm">
                                                 <input
                                                     className="form-check-input mt-0"
@@ -747,7 +752,12 @@ export default function ClosedCases() {
                 }
             </div>
 
-            <div style={{ display: "none" }}>
+            <div style={{
+                position: 'absolute',
+                top: '-9999px',
+                left: '-9999px',
+                width: '1000px',
+            }}>
                 <ReportToPrint ref={componentRef} selectedCaseData={selectedCaseData} selectedFields={selectedFields} viewMode={viewMode} />
             </div>
         </div>
