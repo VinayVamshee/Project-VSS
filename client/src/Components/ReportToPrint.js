@@ -7,12 +7,13 @@ const ReportToPrint = forwardRef(({ selectedCaseData, selectedFields, viewMode }
 
     return (
         <div ref={ref} className="p-4">
-            <h2 className="mb-4 text-center">Case Report</h2>
+            <h2 className="mb-1 text-center">South East Central Railway</h2>
+            <h3 className='mb-4 text-center'>Vigilance Branch</h3>
 
             {viewMode === "table" ? (
                 <div className="table-responsive">
-                    <table className="table table-bordered table-striped table-sm">
-                        <thead className="table-dark text-center align-middle">
+                    <table className="table table-bordered table-sm">
+                        <thead className=" text-center align-middle">
                             <tr>
                                 <th>S.No.</th>
                                 {selectedFields.map((label, idx) => (
