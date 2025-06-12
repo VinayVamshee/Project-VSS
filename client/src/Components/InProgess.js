@@ -392,7 +392,7 @@ export default function InProgress() {
                 <div className="modal fade" id="fieldSelectModal" tabIndex="-1" aria-labelledby="fieldSelectModalLabel" aria-hidden="true">
                     <div className="modal-dialog modal-dialog-scrollable modal-lg">
                         <div className="modal-content border-0 shadow-sm rounded-4">
-                            <div className="modal-header  text-white rounded-top-4">
+                            <div className="modal-header text-white rounded-top-4">
                                 <h5 className="modal-title" id="fieldSelectModalLabel">
                                     📝 Select Fields to Include in Report
                                 </h5>
@@ -400,9 +400,26 @@ export default function InProgress() {
                             </div>
 
                             <div className="modal-body px-4">
+                                {/* 🔘 Select All Checkbox */}
+                                <div className="form-check mb-3">
+                                    <input
+                                        className="form-check-input"
+                                        type="checkbox"
+                                        id="selectAllFields"
+                                        checked={selectedFields.length === allFieldLabels.length}
+                                        onChange={() => {
+                                            const allSelected = selectedFields.length === allFieldLabels.length;
+                                            setSelectedFields(allSelected ? [] : allFieldLabels);
+                                        }}
+                                    />
+                                    <label className="form-check-label fw-semibold" htmlFor="selectAllFields">
+                                        Select All Fields
+                                    </label>
+                                </div>
+
                                 <div className="row">
                                     {allFieldLabels.map((label, idx) => (
-                                        <div className="col-12 col-md-6 mb-1" key={idx}> {/* 👈 Change col-md-4 to col-md-6 for 2 columns */}
+                                        <div className="col-12 col-md-6 mb-1" key={idx}>
                                             <label className="p-2 list-group-item d-flex align-items-center gap-2 border rounded shadow-sm">
                                                 <input
                                                     className="form-check-input mt-0"
@@ -416,13 +433,13 @@ export default function InProgress() {
                                         </div>
                                     ))}
                                 </div>
-
                             </div>
 
                             <div className="modal-footer bg-light rounded-bottom-4">
                                 <button type="button" className="btn btn-outline-secondary" data-bs-dismiss="modal">
                                     Cancel
                                 </button>
+
                                 {/* 🔘 View Mode Selector */}
                                 <div className="d-flex justify-content-end align-items-center mb-2">
                                     <label className="me-2 fw-semibold">View Mode:</label>
@@ -435,11 +452,12 @@ export default function InProgress() {
                                         <option value="grid">Grid</option>
                                     </select>
                                 </div>
+
                                 <button
                                     type="button"
                                     className="btn btn-primary"
                                     data-bs-dismiss="modal"
-                                    onClick={() => handlePrint(viewMode)} // 👈 Pass mode to print
+                                    onClick={() => handlePrint(viewMode)}
                                 >
                                     <i className="bi bi-printer me-1"></i> Print Selected
                                 </button>
