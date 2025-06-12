@@ -114,11 +114,31 @@ export default function ClosedCases() {
 
             if (!fieldValue) return false;
 
-            if (
-                typeof fieldValue === "string" &&
-                !fieldValue.toLowerCase().includes(value.toLowerCase())
-            ) {
-                return false;
+            if (typeof value === "string" && value.includes(" to ")) {
+                const [fromStr, toStr] = value.split(" to ");
+                const fromDate = new Date(fromStr);
+                const toDate = new Date(toStr);
+                const actualDate = new Date(fieldValue);
+
+                if (
+                    isNaN(fromDate.getTime()) ||
+                    isNaN(toDate.getTime()) ||
+                    isNaN(actualDate.getTime())
+                ) {
+                    return false; // any invalid date: skip
+                }
+
+                if (actualDate < fromDate || actualDate > toDate) {
+                    return false; // outside range
+                }
+            } else {
+                // Normal string matching
+                if (
+                    typeof fieldValue === "string" &&
+                    !fieldValue.toLowerCase().includes(value.toLowerCase())
+                ) {
+                    return false;
+                }
             }
         }
 
@@ -191,6 +211,8 @@ export default function ClosedCases() {
     const [viewMode, setViewMode] = useState("table");
 
     const [openCollapses, setOpenCollapses] = useState([]);
+    const [dateRange, setDateRange] = useState({ from: "", to: "" });
+    const [selectedDateRangeField, setSelectedDateRangeField] = useState("");
 
     return (
         <div className="Home">
@@ -223,6 +245,98 @@ export default function ClosedCases() {
                     <div className="Filters AllFilters">
                         <div className="">
                             <div className="input-group">
+                                <div className="input-group mb-1">
+                                    {/* Dropdown to select a date field */}
+                                    <button
+                                        className="btn btn-outline-secondary dropdown-toggle"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                    >
+                                        <i className="bi bi-calendar-range me-2"></i>
+                                        {selectedDateRangeField || "Select date field"}
+                                    </button>
+
+                                    <ul className="dropdown-menu dropdown-menu-end">
+                                        {formSchemas
+                                            .flatMap((form) =>
+                                                form.inputFields.flatMap((field) => {
+                                                    if (field.type === "group") {
+                                                        return field.fields
+                                                            .filter((subField) =>
+                                                                `${field.label} - ${subField.label}`.toLowerCase().includes("date")
+                                                            )
+                                                            .map((subField) => ({
+                                                                label: `${field.label} - ${subField.label}`,
+                                                                key: `${field.label} - ${subField.label}`,
+                                                            }));
+                                                    }
+
+                                                    if (field.label.toLowerCase().includes("date")) {
+                                                        return [{ label: field.label, key: field.label }];
+                                                    }
+
+                                                    return [];
+                                                })
+                                            )
+                                            .map(({ label, key }, idx) => (
+                                                <li key={idx}>
+                                                    <button
+                                                        className="dropdown-item"
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSelectedDateRangeField(key);
+                                                        }}
+                                                    >
+                                                        {label}
+                                                    </button>
+                                                </li>
+                                            ))}
+                                    </ul>
+
+                                    {/* Date inputs shown only after field is selected */}
+                                    {selectedDateRangeField && (
+                                        <>
+                                            <input
+                                                type="date"
+                                                className="form-control"
+                                                placeholder="From date"
+                                                value={dateRange.from}
+                                                onChange={(e) =>
+                                                    setDateRange({ ...dateRange, from: e.target.value })
+                                                }
+                                            />
+                                            <input
+                                                type="date"
+                                                className="form-control"
+                                                placeholder="To date"
+                                                value={dateRange.to}
+                                                onChange={(e) =>
+                                                    setDateRange({ ...dateRange, to: e.target.value })
+                                                }
+                                            />
+                                            <button
+                                                className="btn btn-outline-primary"
+                                                type="button"
+                                                onClick={() => {
+                                                    if (selectedDateRangeField && dateRange.from && dateRange.to) {
+                                                        setFilters([
+                                                            ...filters,
+                                                            {
+                                                                field: selectedDateRangeField,
+                                                                value: `${dateRange.from} to ${dateRange.to}`,
+                                                            },
+                                                        ]);
+                                                        setSelectedDateRangeField("");
+                                                        setDateRange({ from: "", to: "" });
+                                                    }
+                                                }}
+                                            >
+                                                <i className="fa-solid fa-filter me-2"></i>Add Date Filter
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
 
                                 {/* Dynamic input box or select based on selected field */}
                                 {(() => {
@@ -497,7 +611,19 @@ export default function ClosedCases() {
 
                                         {/* <div>S.No. {caseItem.SNo}</div> */}
                                         <div>Type of Check - {caseDetails["Type Of Check"] || "Not filled"}</div>
-                                        <div>Date of Check - {caseDetails["Date Of Check"] || "Not filled"}</div>
+                                        <div>
+                                            <span style={{ fontWeight: 'bold' }}>DOC :</span>{" "}
+                                            {caseDetails["Date Of Check"]
+                                                ? (() => {
+                                                    const date = new Date(caseDetails["Date Of Check"]);
+                                                    if (isNaN(date.getTime())) return caseDetails["Date Of Check"];
+                                                    const day = String(date.getDate()).padStart(2, "0");
+                                                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                                                    const year = date.getFullYear();
+                                                    return `${day}-${month}-${year}`;
+                                                })()
+                                                : "Not filled"}
+                                        </div>
                                         <div>Department - {caseDetails["Department"] || "Not filled"}</div>
                                     </div>
 
