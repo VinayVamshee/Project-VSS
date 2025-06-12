@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import * as XLSX from "xlsx";
+import { useReactToPrint } from 'react-to-print';
+import { useRef } from 'react';
+import ReportToPrint from './ReportToPrint';
 
 export default function InProgress() {
     const navigate = useNavigate();
@@ -15,7 +18,7 @@ export default function InProgress() {
     const [searchText, setSearchText] = useState("");
 
     const [userRole, setUserRole] = useState('');
-     // eslint-disable-next-line 
+    // eslint-disable-next-line 
     const [IsUserLoggedIn, setIsUserLoggedIn] = useState(false);
     const [IsAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
@@ -153,6 +156,40 @@ export default function InProgress() {
         const today = new Date().toISOString().split("T")[0];
         XLSX.writeFile(wb, `Reports - ${today}.xlsx`);
     };
+
+    const componentRef = useRef(null);
+    const selectedCaseData = CaseData.filter(caseItem => selectedCases.includes(caseItem._id));
+    const [selectedFields, setSelectedFields] = useState([]);
+    const [allFieldLabels, setAllFieldLabels] = useState([]);
+
+    useEffect(() => {
+        const labels = new Set();
+        selectedCaseData.forEach((caseItem) => {
+            const fields = caseItem.inputFields || {};
+            Object.keys(fields).forEach(label => labels.add(label));
+        });
+
+        const allLabelsArray = [...labels];
+
+        setAllFieldLabels(prev =>
+            JSON.stringify(prev) !== JSON.stringify(allLabelsArray) ? allLabelsArray : prev
+        );
+    }, [selectedCaseData]);
+
+    const toggleFieldSelection = (label) => {
+        setSelectedFields((prev) =>
+            prev.includes(label)
+                ? prev.filter((l) => l !== label)
+                : [...prev, label]
+        );
+    };
+
+    const handlePrint = useReactToPrint({
+        contentRef: componentRef,
+        documentTitle: 'Selected Cases Report',
+    });
+
+    const [openCollapses, setOpenCollapses] = useState([]);
 
     return (
         <div className="Home">
@@ -323,12 +360,13 @@ export default function InProgress() {
                                     />
                                     <label className="ms-2">Select All</label>
                                 </div>
-                                <button className="btn" onClick={handleDownloadExcel}>
+                                <button className="btn me-2" onClick={handleDownloadExcel}>
                                     <i className="fa-solid fa-file-excel me-2"></i> Download Excel
                                 </button>
+                                <button className="btn" data-bs-toggle="modal" data-bs-target="#fieldSelectModal">
+                                    <i className="fa-solid fa-file-pdf me-2"></i> Download Report
+                                </button>
                             </div>
-
-
                         </div>
 
                         {/* Show active filters */}
@@ -347,18 +385,55 @@ export default function InProgress() {
                             ))}
                         </div>
                     </div>
-
                 </div>
 
+                <div className="modal fade" id="fieldSelectModal" tabIndex="-1" aria-labelledby="fieldSelectModalLabel" aria-hidden="true">
+                    <div className="modal-dialog modal-dialog-scrollable modal-lg">
+                        <div className="modal-content border-0 shadow-sm rounded-4">
+                            <div className="modal-header  text-white rounded-top-4">
+                                <h5 className="modal-title" id="fieldSelectModalLabel">
+                                    📝 Select Fields to Include in Report
+                                </h5>
+                                <button type="button" className="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
 
+                            <div className="modal-body px-4">
+                                <div className="row">
+                                    {allFieldLabels.map((label, idx) => (
+                                        <div className="col-12 col-md-6 mb-1" key={idx}> {/* 👈 Change col-md-4 to col-md-6 for 2 columns */}
+                                            <label className="p-2 list-group-item d-flex align-items-center gap-2 border rounded shadow-sm">
+                                                <input
+                                                    className="form-check-input mt-0"
+                                                    type="checkbox"
+                                                    value={label}
+                                                    checked={selectedFields.includes(label)}
+                                                    onChange={() => toggleFieldSelection(label)}
+                                                />
+                                                <span className="fw-medium">{label}</span>
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
 
+                            <div className="modal-footer bg-light rounded-bottom-4">
+                                <button type="button" className="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+                                <button type="button" className="btn btn-primary" data-bs-dismiss="modal" onClick={handlePrint}>
+                                    <i className="bi bi-printer me-1"></i> Print Selected
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 {filteredCases.length > 0 ? (
                     filteredCases.map((caseItem, index) => {
                         const collapseId = `collapseCaseInfo-${index}`;
                         const caseDetails = caseItem.inputFields || {};
                         return (
-                            <div key={index} className="Case-Item" style={{ animationDelay: `${index * 0.1}s` }}>
+                            <div key={index} className={`Case-Item ${openCollapses.includes(collapseId) ? 'active' : ''}`} style={{ animationDelay: `${index * 0.1}s` }}>
                                 <div className="Case-OverView">
                                     <div className="Base-Case">
                                         <i
@@ -418,8 +493,16 @@ export default function InProgress() {
                                                     type="button"
                                                     data-bs-toggle="collapse"
                                                     data-bs-target={`#${collapseId}`}
-                                                    aria-expanded="false"
+                                                    aria-expanded={openCollapses.includes(collapseId)}
                                                     aria-controls={collapseId}
+                                                    onClick={() => {
+                                                        setOpenCollapses(prev =>
+                                                            prev.includes(collapseId)
+                                                                ? prev.filter(id => id !== collapseId) // close if already open
+                                                                : [...prev, collapseId]               // open if not already open
+                                                        );
+                                                    }}
+
                                                 >
                                                     <i className="fa-solid fa-square-caret-up fa-rotate-180 fa-lg"></i>
                                                 </button>
@@ -607,7 +690,11 @@ export default function InProgress() {
                 ) : (
                     <p>No cases available.</p>
                 )}
+            </div>
 
+
+            <div style={{ display: "none" }}>
+                <ReportToPrint ref={componentRef} selectedCaseData={selectedCaseData} selectedFields={selectedFields} />
             </div>
         </div>
     );

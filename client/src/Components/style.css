@@ -9,6 +9,19 @@
   background-color: rgba(0, 0, 0, 0.51);
 }
 
+.modal-header {
+  background-color: var(--filter-bg);
+}
+
+.modal-body {
+  background-color: var(--case-overview-bg);
+}
+
+.modal-body .list-group-item {
+  background-color: var(--case-info-bg);
+  color: var(--text-color);
+}
+
 :root {
   --navigation-color: #333;
   --bg-color: #F7FAFE;
@@ -252,6 +265,431 @@
   --vigilance-text: #006064;
 }
 
+/* 🧊 Cool Silver Theme */
+[data-theme='cool-silver'] {
+  --navigation-color: #4a4a4a;
+  --bg-color: #f3f4f6;
+  --text-color: #2d2d2d;
+  --btn-bg: #d1d5db;
+  --btn-hover-bg: #9ca3af;
+  --filter-bg: #6b7280;
+  --case-overview-bg: #ffffff;
+  --case-info-bg: #e5e7eb;
+  --status-btn-bg: #d1d5db;
+  --status-btn-active-bg: #374151;
+  --scrollbar-bg: #e0e0e0;
+  --scrollbar-thumb: #9ca3af;
+  --vigilance-bg: linear-gradient(135deg, #e5e7eb 0%, #9ca3af 100%);
+  --vigilance-glow: #6b7280;
+  --vigilance-text: #2d2d2d;
+}
+
+/* 🍀 Mint Theme */
+[data-theme='mint'] {
+  --navigation-color: #3ba58d;
+  --bg-color: #e6fff9;
+  --text-color: #264d3b;
+  --btn-bg: #c3f2e4;
+  --btn-hover-bg: #a2e9d3;
+  --filter-bg: #60d5ae;
+  --case-overview-bg: #f0fff9;
+  --case-info-bg: #d2f7ea;
+  --status-btn-bg: #c3f2e4;
+  --status-btn-active-bg: #3ba58d;
+  --scrollbar-bg: #d8fdf2;
+  --scrollbar-thumb: #60d5ae;
+  --vigilance-bg: linear-gradient(135deg, #c3f2e4 0%, #3ba58d 100%);
+  --vigilance-glow: #3ba58d;
+  --vigilance-text: #264d3b;
+}
+
+/* 🫐 Indigo Night Theme */
+[data-theme='indigo-night'] {
+  --navigation-color: #2c3e50;
+  --bg-color: #ecf0f1;
+  --text-color: #1b2631;
+  --btn-bg: #d6eaf8;
+  --btn-hover-bg: #aed6f1;
+  --filter-bg: #34495e;
+  --case-overview-bg: #f4f6f7;
+  --case-info-bg: #d0e1f9;
+  --status-btn-bg: #d6eaf8;
+  --status-btn-active-bg: #5dade2;
+  --scrollbar-bg: #d5eaf7;
+  --scrollbar-thumb: #5dade2;
+  --vigilance-bg: linear-gradient(135deg, #d6eaf8 0%, #5dade2 100%);
+  --vigilance-glow: #5dade2;
+  --vigilance-text: #1b2631;
+}
+
+/* 🌿 Forest Theme */
+[data-theme='forest'] {
+  --navigation-color: #2e4600;
+  --bg-color: #f1f8e9;
+  --text-color: #1b3300;
+  --btn-bg: #dcedc8;
+  --btn-hover-bg: #c5e1a5;
+  --filter-bg: #33691e;
+  --case-overview-bg: #f9fff3;
+  --case-info-bg: #d7f7c2;
+  --status-btn-bg: #dcedc8;
+  --status-btn-active-bg: #689f38;
+  --scrollbar-bg: #d9efc2;
+  --scrollbar-thumb: #8bc34a;
+  --vigilance-bg: linear-gradient(135deg, #dcedc8 0%, #689f38 100%);
+  --vigilance-glow: #689f38;
+  --vigilance-text: #1b3300;
+}
+
+/* 🌌 Galaxy Theme */
+[data-theme='galaxy'] {
+  --navigation-color: #0a0a1f;
+  /* deep space */
+  --bg-color: #0b0c1a;
+  /* near-black base */
+  --text-color: #f2f2f2;
+  /* soft star-like white */
+
+  --btn-bg: #261f3d;
+  /* twilight purple */
+  --btn-hover-bg: #3a2b5f;
+  /* more intense purple-blue */
+
+  --filter-bg: #1a142f;
+  /* dark violet */
+  --case-overview-bg: #17122b;
+  /* background nebula tone */
+  --case-info-bg: #2a1e40;
+  /* deep space purple */
+
+  --status-btn-bg: #3d295a;
+  /* muted galaxy glow */
+  --status-btn-active-bg: #ff4c29;
+  /* cosmic orange flare */
+
+  --scrollbar-bg: #1e1e3f;
+  --scrollbar-thumb: #e94f8a;
+  /* nebula pink highlight */
+
+  --vigilance-bg: linear-gradient(135deg,
+      #0b0c1a 0%,
+      #2a1e40 25%,
+      #5f2c82 45%,
+      #ff4c29 65%,
+      #ffd700 85%,
+      #ffffff 100%);
+  --vigilance-glow: #ffa726;
+  /* golden glow */
+  --vigilance-text: #ffffff;
+  /* clean space white */
+}
+
+/* ========== COSMIC HORIZON ========== */
+[data-theme='cosmic-horizon'] {
+  --navigation-color: #0b132b;
+  --bg-color: #1c2541;
+  --text-color: #e0e1dd;
+
+  --btn-bg: #3a506b;
+  --btn-hover-bg: #5bc0be;
+
+  --filter-bg: #1b1b2f;
+  --case-overview-bg: #2e3a59;
+  --case-info-bg: #3e506a;
+
+  --status-btn-bg: #1c7293;
+  --status-btn-active-bg: #ffe156;
+
+  --scrollbar-bg: #273c75;
+  --scrollbar-thumb: #f08a5d;
+
+  --vigilance-bg: linear-gradient(135deg, #1c2541 0%, #3a506b 35%, #f08a5d 65%, #ffe156 100%);
+  --vigilance-glow: #f67280;
+  --vigilance-text: #ffffff;
+}
+
+/* ========== STELLAR SUNSET ========== */
+[data-theme='stellar-sunset'] {
+  --navigation-color: #331a1a;
+  --bg-color: #2a0d0d;
+  --text-color: #fff3e0;
+
+  --btn-bg: #662222;
+  --btn-hover-bg: #a13333;
+
+  --filter-bg: #3f1d1d;
+  --case-overview-bg: #5c2e2e;
+  --case-info-bg: #8b4444;
+
+  --status-btn-bg: #bf5e5e;
+  --status-btn-active-bg: #ff6f00;
+
+  --scrollbar-bg: #4e1e1e;
+  --scrollbar-thumb: #ffa07a;
+
+  --vigilance-bg: linear-gradient(135deg, #2a0d0d 0%, #662222 25%, #ff6f00 50%, #ffe600 75%, #ffffff 100%);
+  --vigilance-glow: #ff7043;
+  --vigilance-text: #ffffff;
+}
+
+/* ========== NEBULA DREAM (Bright / Light) ========== */
+[data-theme='nebula-dream'] {
+  --navigation-color: #e0d9ff;
+  /* light purple */
+  --bg-color: #f5f3ff;
+  /* very light lavender */
+  --text-color: #3a0471;
+  /* deep purple for contrast */
+
+  --btn-bg: #a083ff;
+  /* medium lavender */
+  --btn-hover-bg: #7a5fff;
+  /* darker lavender */
+
+  --filter-bg: #d4c4ff;
+  /* light purple */
+  --case-overview-bg: #b1a0ff;
+  /* pale violet */
+  --case-info-bg: #8a75ff;
+  /* vibrant purple */
+
+  --status-btn-bg: #7a5fff;
+  --status-btn-active-bg: #ff6f00;
+
+  --scrollbar-bg: #c9b8ff;
+  --scrollbar-thumb: #7a5fff;
+
+  --vigilance-bg: linear-gradient(135deg, #f5f3ff 0%, #a083ff 50%, #ff6f00 100%);
+  --vigilance-glow: #7a5fff;
+  --vigilance-text: #3a0471;
+}
+
+/* ========== AURORA BOREALIS (Deep / Dark) ========== */
+[data-theme='aurora-borealis'] {
+  --navigation-color: #002b36;
+  --bg-color: #001f27;
+  --text-color: #e0f7fa;
+
+  --btn-bg: #003d4c;
+  --btn-hover-bg: #004d60;
+
+  --filter-bg: #002837;
+  --case-overview-bg: #003847;
+  --case-info-bg: #00475a;
+
+  --status-btn-bg: #006064;
+  --status-btn-active-bg: #00bfa5;
+
+  --scrollbar-bg: #002e3a;
+  --scrollbar-thumb: #00acc1;
+
+  --vigilance-bg: linear-gradient(135deg, #001f27 0%, #004d60 25%, #00acc1 50%, #8e24aa 75%, #e1bee7 100%);
+  --vigilance-glow: #00e676;
+  --vigilance-text: #ffffff;
+}
+
+/* ========== EARTH TONES ========== */
+[data-theme='earth-tones'] {
+  --navigation-color: #4b3927;
+  /* dark brown */
+  --bg-color: #f2efe9;
+  /* off-white sand */
+  --text-color: #3e2f1c;
+  /* rich soil brown */
+
+  --btn-bg: #8d7a6b;
+  /* muted brown */
+  --btn-hover-bg: #b39a8b;
+  /* soft taupe */
+
+  --filter-bg: #6c584c;
+  /* medium brown */
+  --case-overview-bg: #ded6cc;
+  /* warm beige */
+  --case-info-bg: #c7bca9;
+  /* light tan */
+
+  --status-btn-bg: #8d7a6b;
+  --status-btn-active-bg: #4b3927;
+
+  --scrollbar-bg: #d9cfc4;
+  --scrollbar-thumb: #6c584c;
+
+  --vigilance-bg: linear-gradient(135deg, #f2efe9 0%, #8d7a6b 70%, #4b3927 100%);
+  --vigilance-glow: #8d7a6b;
+  --vigilance-text: #3e2f1c;
+}
+
+/* ========== MOUNTAIN STONE ========== */
+[data-theme='mountain-stone'] {
+  --navigation-color: #565656;
+  /* stone grey */
+  --bg-color: #d6d6d6;
+  /* light stone */
+  --text-color: #2b2b2b;
+  /* dark stone */
+
+  --btn-bg: #8b8b8b;
+  /* medium grey */
+  --btn-hover-bg: #a9a9a9;
+  /* lighter grey */
+
+  --filter-bg: #757575;
+  /* mid grey */
+  --case-overview-bg: #cfcfcf;
+  /* pale grey */
+  --case-info-bg: #bfbfbf;
+  /* soft grey */
+
+  --status-btn-bg: #8b8b8b;
+  --status-btn-active-bg: #565656;
+
+  --scrollbar-bg: #d1d1d1;
+  --scrollbar-thumb: #757575;
+
+  --vigilance-bg: linear-gradient(135deg, #d6d6d6 0%, #8b8b8b 70%, #565656 100%);
+  --vigilance-glow: #8b8b8b;
+  --vigilance-text: #2b2b2b;
+}
+
+/* ========== SAND DUNE ========== */
+[data-theme='sand-dune'] {
+  --navigation-color: #a67c00;
+  /* golden brown */
+  --bg-color: #fff8e1;
+  /* pale sand */
+  --text-color: #4d3b00;
+  /* dark sand brown */
+
+  --btn-bg: #d9b200;
+  /* mustard yellow */
+  --btn-hover-bg: #ffce54;
+  /* bright sand */
+
+  --filter-bg: #b58a00;
+  /* goldenrod */
+  --case-overview-bg: #fff3b0;
+  /* light yellow */
+  --case-info-bg: #fff7d1;
+  /* creamy yellow */
+
+  --status-btn-bg: #d9b200;
+  --status-btn-active-bg: #a67c00;
+
+  --scrollbar-bg: #ffeb99;
+  --scrollbar-thumb: #b58a00;
+
+  --vigilance-bg: linear-gradient(135deg, #fff8e1 0%, #d9b200 70%, #a67c00 100%);
+  --vigilance-glow: #d9b200;
+  --vigilance-text: #4d3b00;
+}
+
+/* ========== FOREST FLOOR ========== */
+[data-theme='forest-floor'] {
+  --navigation-color: #2f4f2f;
+  /* deep green */
+  --bg-color: #e6f0e6;
+  /* pale mint green */
+  --text-color: #1a2a1a;
+  /* dark moss green */
+
+  --btn-bg: #6a8f6a;
+  /* moss green */
+  --btn-hover-bg: #4e754e;
+  /* forest green */
+
+  --filter-bg: #547654;
+  /* medium green */
+  --case-overview-bg: #d9e6d9;
+  /* light green */
+  --case-info-bg: #b8d0b8;
+  /* soft green */
+
+  --status-btn-bg: #6a8f6a;
+  --status-btn-active-bg: #2f4f2f;
+
+  --scrollbar-bg: #cde6cd;
+  --scrollbar-thumb: #547654;
+
+  --vigilance-bg: linear-gradient(135deg, #e6f0e6 0%, #6a8f6a 70%, #2f4f2f 100%);
+  --vigilance-glow: #4e754e;
+  --vigilance-text: #1a2a1a;
+}
+
+/* Supernova Burst - Bright reds, oranges, yellows, pinks */
+[data-theme='supernova'] {
+  --navigation-color: #330000;
+  --bg-color: #fff0f0;
+  --text-color: #660000;
+
+  --btn-bg: #ff6666;
+  --btn-hover-bg: #ff4444;
+
+  --filter-bg: #cc0000;
+  --case-overview-bg: #ffe6e6;
+  --case-info-bg: #ffcccc;
+
+  --status-btn-bg: #ff9999;
+  --status-btn-active-bg: #ff3300;
+
+  --scrollbar-bg: #ffb3b3;
+  --scrollbar-thumb: #cc0000;
+
+  --vigilance-bg: linear-gradient(135deg, #ffcccc 0%, #ff3300 100%);
+  --vigilance-glow: #ff3300;
+  --vigilance-text: #660000;
+}
+
+/* Cosmic Neon - Bright neon blues, greens, purples */
+[data-theme='cosmic-neon'] {
+  --navigation-color: #001f3f;
+  --bg-color: #e0f7ff;
+  --text-color: #003366;
+
+  --btn-bg: #33ccff;
+  --btn-hover-bg: #00bfff;
+
+  --filter-bg: #0099cc;
+  --case-overview-bg: #ccf2ff;
+  --case-info-bg: #99e6ff;
+
+  --status-btn-bg: #33ccff;
+  --status-btn-active-bg: #00cc99;
+
+  --scrollbar-bg: #99e6ff;
+  --scrollbar-thumb: #007777;
+
+  --vigilance-bg: linear-gradient(135deg, #00ccff 0%, #00cc99 100%);
+  --vigilance-glow: #00cc99;
+  --vigilance-text: #003366;
+}
+
+/* Stellar Candy - Bright pinks, purples, blues */
+[data-theme='stellar-candy'] {
+  --navigation-color: #660066;
+  --bg-color: #ffe6ff;
+  --text-color: #330033;
+
+  --btn-bg: #ff99ff;
+  --btn-hover-bg: #ff66ff;
+
+  --filter-bg: #cc33cc;
+  --case-overview-bg: #ffd6ff;
+  --case-info-bg: #ffb3ff;
+
+  --status-btn-bg: #ff99ff;
+  --status-btn-active-bg: #cc00cc;
+
+  --scrollbar-bg: #ffb3ff;
+  --scrollbar-thumb: #990099;
+
+  --vigilance-bg: linear-gradient(135deg, #ff99ff 0%, #cc00cc 100%);
+  --vigilance-glow: #cc00cc;
+  --vigilance-text: #330033;
+}
+
+
+
 .select-icon {
   transition: color 0.3s ease;
 }
@@ -264,6 +702,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -348,6 +787,7 @@
   width: 100%;
   min-height: 100vh;
   background-color: var(--bg-color);
+  color: var(--text-color);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -459,6 +899,13 @@
 
   animation: slideDown 0.6s ease-in-out forwards;
   transform-origin: top center;
+}
+
+.Home .Grid .Case-Item.active {
+  color: black;
+  background-color: whitesmoke;
+  /* or any highlight color */
+  transition: background-color 0.3s ease;
 }
 
 .Grid .Case-OverView {
@@ -651,4 +1098,8 @@ button {
 .Filters .dropdown-menu {
   height: 500px;
   overflow-y: scroll;
+}
+
+@page {
+  size: landscape;
 }
