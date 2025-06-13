@@ -214,9 +214,11 @@ export default function InProgress() {
         );
     };
 
+    const today = new Date();
+    const formattedDate = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
-        documentTitle: 'Selected Cases Report',
+        documentTitle: `Pending Cases - ${filterType || 'All'} - Case Report - ${formattedDate} `,
     });
 
     const [viewMode, setViewMode] = useState("table");

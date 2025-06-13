@@ -210,9 +210,11 @@ export default function ClosedCases() {
         );
     };
 
+    const today = new Date();
+    const formattedDate = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
-        documentTitle: 'Report',
+        documentTitle: `Closed Cases - ${filterType || 'All'} - Case Report - ${formattedDate} `,
     });
 
     const [viewMode, setViewMode] = useState("table");
@@ -342,7 +344,7 @@ export default function ClosedCases() {
                                     <i className="fa-solid fa-filter me-2"></i>Add Date Filter
                                 </button>
                             </div>
-                            
+
                             <div className="input-group">
                                 {/* Dropdown for field selection */}
                                 <button

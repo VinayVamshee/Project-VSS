@@ -1152,3 +1152,28 @@ button {
     display: none;
   }
 }
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .row {
+    margin: 0 !important;
+  }
+
+  .col-6, .col-5, .col-7 {
+    padding: 0 6px !important;
+  }
+}
