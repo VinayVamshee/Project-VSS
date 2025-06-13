@@ -17,7 +17,7 @@ const ReportToPrint = forwardRef(({ selectedCaseData, selectedFields, viewMode }
                             <tr>
                                 <th>S.No.</th>
                                 {selectedFields.map((label, idx) => (
-                                    <th key={idx} className="text-nowrap">{label}</th>
+                                    <th key={idx}>{label}</th>
                                 ))}
                             </tr>
                         </thead>

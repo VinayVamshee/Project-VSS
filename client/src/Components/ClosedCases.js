@@ -251,97 +251,136 @@ export default function ClosedCases() {
 
                     <div className="Filters AllFilters">
                         <div className="">
+
+                            <div className="input-group mb-1">
+                                {/* Dropdown to select a date field */}
+                                <button
+                                    className="btn btn-outline-secondary dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                >
+                                    <i className="bi bi-calendar-range me-2"></i>
+                                    {selectedDateRangeField || "Select Date Field"}
+                                </button>
+
+                                <ul className="dropdown-menu dropdown-menu-end">
+                                    {formSchemas
+                                        .flatMap((form) =>
+                                            form.inputFields.flatMap((field) => {
+                                                if (field.type === "group") {
+                                                    return field.fields
+                                                        .filter((subField) =>
+                                                            `${field.label} - ${subField.label}`.toLowerCase().includes("date")
+                                                        )
+                                                        .map((subField) => ({
+                                                            label: `${field.label} - ${subField.label}`,
+                                                            key: `${field.label} - ${subField.label}`,
+                                                        }));
+                                                }
+
+                                                if (field.label.toLowerCase().includes("date")) {
+                                                    return [{ label: field.label, key: field.label }];
+                                                }
+
+                                                return [];
+                                            })
+                                        )
+                                        .map(({ label, key }, idx) => (
+                                            <li key={idx}>
+                                                <button
+                                                    className="dropdown-item"
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSelectedDateRangeField(key);
+                                                    }}
+                                                >
+                                                    {label}
+                                                </button>
+                                            </li>
+                                        ))}
+                                </ul>
+
+                                {/* Date inputs shown only after field is selected */}
+                                <label className="btn ms-2">From Date</label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    placeholder="From date"
+                                    value={dateRange.from}
+                                    onChange={(e) =>
+                                        setDateRange({ ...dateRange, from: e.target.value })
+                                    }
+                                />
+                                <label className="btn ms-1">To Date</label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    placeholder="To date"
+                                    value={dateRange.to}
+                                    onChange={(e) =>
+                                        setDateRange({ ...dateRange, to: e.target.value })
+                                    }
+                                />
+                                <button
+                                    className="btn btn-outline-primary"
+                                    type="button"
+                                    onClick={() => {
+                                        if (selectedDateRangeField && dateRange.from && dateRange.to) {
+                                            setFilters([
+                                                ...filters,
+                                                {
+                                                    field: selectedDateRangeField,
+                                                    value: `${dateRange.from} to ${dateRange.to}`,
+                                                },
+                                            ]);
+                                            setSelectedDateRangeField("");
+                                            setDateRange({ from: "", to: "" });
+                                        }
+                                    }}
+                                >
+                                    <i className="fa-solid fa-filter me-2"></i>Add Date Filter
+                                </button>
+                            </div>
+                            
                             <div className="input-group">
-                                <div className="input-group mb-1">
-                                    {/* Dropdown to select a date field */}
-                                    <button
-                                        className="btn btn-outline-secondary dropdown-toggle"
-                                        type="button"
-                                        data-bs-toggle="dropdown"
-                                        aria-expanded="false"
-                                    >
-                                        <i className="bi bi-calendar-range me-2"></i>
-                                        {selectedDateRangeField || "Select Date Field"}
-                                    </button>
-
-                                    <ul className="dropdown-menu dropdown-menu-end">
-                                        {formSchemas
-                                            .flatMap((form) =>
-                                                form.inputFields.flatMap((field) => {
-                                                    if (field.type === "group") {
-                                                        return field.fields
-                                                            .filter((subField) =>
-                                                                `${field.label} - ${subField.label}`.toLowerCase().includes("date")
-                                                            )
-                                                            .map((subField) => ({
-                                                                label: `${field.label} - ${subField.label}`,
-                                                                key: `${field.label} - ${subField.label}`,
-                                                            }));
-                                                    }
-
-                                                    if (field.label.toLowerCase().includes("date")) {
-                                                        return [{ label: field.label, key: field.label }];
-                                                    }
-
-                                                    return [];
-                                                })
-                                            )
-                                            .map(({ label, key }, idx) => (
-                                                <li key={idx}>
-                                                    <button
-                                                        className="dropdown-item"
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setSelectedDateRangeField(key);
-                                                        }}
-                                                    >
-                                                        {label}
-                                                    </button>
-                                                </li>
-                                            ))}
-                                    </ul>
-
-                                    {/* Date inputs shown only after field is selected */}
-                                    <label className="btn">From Date</label>
-                                    <input
-                                        type="date"
-                                        className="form-control"
-                                        placeholder="From date"
-                                        value={dateRange.from}
-                                        onChange={(e) =>
-                                            setDateRange({ ...dateRange, from: e.target.value })
-                                        }
-                                    />
-                                    <label className="btn ms-1">To Date</label>
-                                    <input
-                                        type="date"
-                                        className="form-control"
-                                        placeholder="To date"
-                                        value={dateRange.to}
-                                        onChange={(e) =>
-                                            setDateRange({ ...dateRange, to: e.target.value })
-                                        }
-                                    />
-                                    <button
-                                        className="btn btn-outline-primary"
-                                        type="button"
-                                        onClick={() => {
-                                            if (selectedDateRangeField && dateRange.from && dateRange.to) {
-                                                setFilters([
-                                                    ...filters,
-                                                    {
-                                                        field: selectedDateRangeField,
-                                                        value: `${dateRange.from} to ${dateRange.to}`,
-                                                    },
-                                                ]);
-                                                setSelectedDateRangeField("");
-                                                setDateRange({ from: "", to: "" });
-                                            }
-                                        }}
-                                    >
-                                        <i className="fa-solid fa-filter me-2"></i>Add Date Filter
-                                    </button>
-                                </div>
+                                {/* Dropdown for field selection */}
+                                <button
+                                    className="btn btn-outline-secondary dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                >
+                                    <i className="fa-brands fa-searchengin fa-xl me-2"></i>{selectedField || "Select field"}
+                                </button>
+                                <ul className="dropdown-menu dropdown-menu-end">
+                                    {formSchemas
+                                        .flatMap((form) =>
+                                            form.inputFields.flatMap((field) => {
+                                                if (field.type === "group") {
+                                                    return field.fields.map((subField) => ({
+                                                        label: `${field.label} - ${subField.label}`,
+                                                        key: `${field.label} - ${subField.label}`,
+                                                    }));
+                                                }
+                                                return [{ label: field.label, key: field.label }];
+                                            })
+                                        )
+                                        .map(({ label, key }, idx) => (
+                                            <li key={idx}>
+                                                <button
+                                                    className="dropdown-item"
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSelectedField(key);
+                                                        setSearchText(""); // reset search value
+                                                    }}
+                                                >
+                                                    {label}
+                                                </button>
+                                            </li>
+                                        ))}
+                                </ul>
 
                                 {/* Dynamic input box or select based on selected field */}
                                 {(() => {
@@ -399,44 +438,6 @@ export default function ClosedCases() {
                                         />
                                     );
                                 })()}
-
-                                {/* Dropdown for field selection */}
-                                <button
-                                    className="btn btn-outline-secondary dropdown-toggle"
-                                    type="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                >
-                                    <i className="fa-brands fa-searchengin fa-xl me-2"></i>{selectedField || "Select field"}
-                                </button>
-                                <ul className="dropdown-menu dropdown-menu-end">
-                                    {formSchemas
-                                        .flatMap((form) =>
-                                            form.inputFields.flatMap((field) => {
-                                                if (field.type === "group") {
-                                                    return field.fields.map((subField) => ({
-                                                        label: `${field.label} - ${subField.label}`,
-                                                        key: `${field.label} - ${subField.label}`,
-                                                    }));
-                                                }
-                                                return [{ label: field.label, key: field.label }];
-                                            })
-                                        )
-                                        .map(({ label, key }, idx) => (
-                                            <li key={idx}>
-                                                <button
-                                                    className="dropdown-item"
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setSelectedField(key);
-                                                        setSearchText(""); // reset search value
-                                                    }}
-                                                >
-                                                    {label}
-                                                </button>
-                                            </li>
-                                        ))}
-                                </ul>
 
                                 {/* Add Filter Button */}
                                 <button
