@@ -943,6 +943,12 @@
   border-radius: 5px;
 }
 
+.repeatIndex {
+    background-color: var(--case-info-bg);
+    padding: 5px;
+    text-align: center;
+}
+
 /* Collapse animation */
 .collapse {
   transition: max-height 0.3s ease;

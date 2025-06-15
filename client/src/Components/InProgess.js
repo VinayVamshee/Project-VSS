@@ -684,107 +684,153 @@ export default function InProgress() {
                                             </>
                                         )
                                     }
-
-
-
-
                                 </div>
 
                                 <div className="collapse w-100 mt-2" id={collapseId}>
                                     <div className="container-fluid">
                                         <div className="row">
-                                            {formSchemas.map((form, formIndex) =>
-                                                Array.isArray(form.showIn) && form.showIn.includes(filterType) &&
-                                                form.inputFields.map((inputField, index) => (
-                                                    <div
-                                                        key={`${formIndex}-${index}`}
-                                                        className={inputField.type === "group" ? "col-12 mb-3" : "col-12 col-sm-6 col-md-3 mb-3"}
-                                                    >
-                                                        {inputField.type === "group" ? (
-                                                            <div>
-                                                                <p className="fw-bold">{inputField.label}:</p>
-                                                                <div className="row">
-                                                                    {inputField.fields.map((subField, idx) => (
-                                                                        <div key={idx} className="col-12 col-sm-6 col-md-3 mb-2">
-                                                                            <label>{subField.label}:</label>
-                                                                            <input
-                                                                                type={subField.label.toLowerCase().includes("date") ? "date" : "text"}
-                                                                                className="form-control"
-                                                                                placeholder={`Enter ${subField.label}`}
-                                                                                value={
-                                                                                    editMode === caseItem._id
-                                                                                        ? updatedFields[subField.label] ?? caseDetails[subField.label] ?? ""
-                                                                                        : caseDetails[subField.label] ?? ""
-                                                                                }
-                                                                                disabled={editMode !== caseItem._id}
-                                                                                onChange={(e) => {
-                                                                                    if (editMode === caseItem._id) {
-                                                                                        setUpdatedFields((prev) => ({
-                                                                                            ...prev,
-                                                                                            [subField.label]: e.target.value
-                                                                                        }));
-                                                                                    }
-                                                                                }}
-                                                                            />
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        ) : inputField.type === "option" ? (
-                                                            <div>
-                                                                <p className="fw-bold">{inputField.label}:</p>
-                                                                <select
-                                                                    className="form-select"
-                                                                    disabled={editMode !== caseItem._id}
-                                                                    value={
-                                                                        editMode === caseItem._id
-                                                                            ? updatedFields[inputField.label] ?? caseDetails[inputField.label] ?? ""
-                                                                            : caseDetails[inputField.label] ?? ""
-                                                                    }
-                                                                    onChange={(e) => {
-                                                                        if (editMode === caseItem._id) {
-                                                                            setUpdatedFields((prev) => ({
-                                                                                ...prev,
-                                                                                [inputField.label]: e.target.value
-                                                                            }));
-                                                                        }
-                                                                    }}
-                                                                >
-                                                                    <option value="">Select</option>
-                                                                    {inputField.fields.map((subField, idx) => (
-                                                                        <option key={idx} value={subField.label}>
-                                                                            {subField.label}
-                                                                        </option>
-                                                                    ))}
-                                                                </select>
-                                                            </div>
-                                                        ) : (
-                                                            <div>
-                                                                <p className="fw-bold">{inputField.label}:</p>
-                                                                <input
-                                                                    type={inputField.label.toLowerCase().includes("date") ? "date" : "text"}
-                                                                    className="form-control"
-                                                                    placeholder={`Enter ${inputField.label}`}
-                                                                    value={
-                                                                        editMode === caseItem._id
-                                                                            ? updatedFields[inputField.label] ?? caseDetails[inputField.label] ?? ""
-                                                                            : caseDetails[inputField.label] ?? ""
-                                                                    }
-                                                                    disabled={editMode !== caseItem._id}
-                                                                    onChange={(e) => {
-                                                                        if (editMode === caseItem._id) {
-                                                                            setUpdatedFields((prev) => ({
-                                                                                ...prev,
-                                                                                [inputField.label]: e.target.value
-                                                                            }));
-                                                                        }
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                        )}
+                                            {(() => {
+                                                const chargedEntry = formSchemas.find(form =>
+                                                    form.inputFields.some(field => field.label === "No. of Charged Official")
+                                                );
+                                                const chargedSNo = chargedEntry?.SNo ?? Infinity;
+                                                const repeatCount = parseInt(caseDetails["No. of Charged Official"]) || 0;
+
+                                                // First render forms before 'No. of Charged Official'
+                                                const staticFields = formSchemas
+                                                    .filter(form => form.SNo <= chargedSNo && Array.isArray(form.showIn) && form.showIn.includes(filterType))
+                                                    .flatMap((form, formIndex) =>
+                                                        form.inputFields.map((inputField, index) => renderField(inputField, formIndex, index))
+                                                    );
+
+                                                // Then render repeating group blocks (1), (2), (3)...
+                                                const repeatingGroups = Array.from({ length: repeatCount }).map((_, repeatIndex) => (
+                                                    <div key={`repeat-${repeatIndex}`} className="row mb-3">
+                                                        <p className="fw-bold rounded repeatIndex"> Charged Offical ({repeatIndex + 1})</p>
+                                                        {formSchemas
+                                                            .filter(form => form.SNo > chargedSNo && Array.isArray(form.showIn) && form.showIn.includes(filterType))
+                                                            .flatMap((form, formIndex) =>
+                                                                form.inputFields.map((inputField, index) =>
+                                                                    renderField(inputField, formIndex, index, repeatIndex)
+                                                                )
+                                                            )}
                                                     </div>
-                                                ))
-                                            )}
+                                                ));
+
+                                                return (
+                                                    <>
+                                                        {staticFields}
+                                                        {repeatingGroups}
+                                                    </>
+                                                );
+
+                                                // Main reusable field renderer
+                                                function renderField(inputField, formIndex, index, repeatIndex = null) {
+                                                    const fieldKey = `${formIndex}-${index}${repeatIndex !== null ? `-${repeatIndex}` : ""}`;
+                                                    const fieldLabel = repeatIndex !== null
+                                                        ? `${inputField.label} ${repeatIndex + 1}`
+                                                        : inputField.label;
+                                                    const valueKey = repeatIndex !== null
+                                                        ? `${inputField.label}_${repeatIndex}`
+                                                        : inputField.label;
+
+                                                    return (
+                                                        <div
+                                                            key={fieldKey}
+                                                            className={inputField.type === "group" ? "col-12 mb-3" : "col-12 col-sm-6 col-md-3 mb-3"}
+                                                        >
+                                                            {inputField.type === "group" ? (
+                                                                <div>
+                                                                    <p className="fw-bold">{inputField.label}:</p>
+                                                                    <div className="row">
+                                                                        {inputField.fields.map((subField, idx) => {
+                                                                            const subValueKey = repeatIndex !== null
+                                                                                ? `${subField.label}_${repeatIndex}`
+                                                                                : subField.label;
+                                                                            return (
+                                                                                <div key={idx} className="col-12 col-sm-6 col-md-3 mb-2">
+                                                                                    <label>{subField.label}:</label>
+                                                                                    <input
+                                                                                        type={subField.label.toLowerCase().includes("date") ? "date" : "text"}
+                                                                                        className="form-control"
+                                                                                        placeholder={`Enter ${subField.label}`}
+                                                                                        value={
+                                                                                            editMode === caseItem._id
+                                                                                                ? updatedFields[subValueKey] ?? caseDetails[subValueKey] ?? ""
+                                                                                                : caseDetails[subValueKey] ?? ""
+                                                                                        }
+                                                                                        disabled={editMode !== caseItem._id}
+                                                                                        onChange={(e) => {
+                                                                                            if (editMode === caseItem._id) {
+                                                                                                setUpdatedFields((prev) => ({
+                                                                                                    ...prev,
+                                                                                                    [subValueKey]: e.target.value
+                                                                                                }));
+                                                                                            }
+                                                                                        }}
+                                                                                    />
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                </div>
+                                                            ) : inputField.type === "option" ? (
+                                                                <div>
+                                                                    <p className="fw-bold">{fieldLabel}:</p>
+                                                                    <select
+                                                                        className="form-select"
+                                                                        disabled={editMode !== caseItem._id}
+                                                                        value={
+                                                                            editMode === caseItem._id
+                                                                                ? updatedFields[valueKey] ?? caseDetails[valueKey] ?? ""
+                                                                                : caseDetails[valueKey] ?? ""
+                                                                        }
+                                                                        onChange={(e) => {
+                                                                            if (editMode === caseItem._id) {
+                                                                                setUpdatedFields((prev) => ({
+                                                                                    ...prev,
+                                                                                    [valueKey]: e.target.value
+                                                                                }));
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        <option value="">Select</option>
+                                                                        {inputField.fields.map((subField, idx) => (
+                                                                            <option key={idx} value={subField.label}>
+                                                                                {subField.label}
+                                                                            </option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                            ) : (
+                                                                <div>
+                                                                    <p className="fw-bold">{fieldLabel}:</p>
+                                                                    <input
+                                                                        type={inputField.label.toLowerCase().includes("date") ? "date" : "text"}
+                                                                        className="form-control"
+                                                                        placeholder={`Enter ${inputField.label}`}
+                                                                        value={
+                                                                            editMode === caseItem._id
+                                                                                ? updatedFields[valueKey] ?? caseDetails[valueKey] ?? ""
+                                                                                : caseDetails[valueKey] ?? ""
+                                                                        }
+                                                                        disabled={editMode !== caseItem._id}
+                                                                        onChange={(e) => {
+                                                                            if (editMode === caseItem._id) {
+                                                                                setUpdatedFields((prev) => ({
+                                                                                    ...prev,
+                                                                                    [valueKey]: e.target.value
+                                                                                }));
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                }
+                                            })()}
+
                                         </div>
 
                                         {/* Action buttons */}
