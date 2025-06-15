@@ -850,7 +850,6 @@ export default function InProgress() {
                                                     );
                                                 }
                                             })()}
-
                                         </div>
 
                                         {/* Action buttons */}
