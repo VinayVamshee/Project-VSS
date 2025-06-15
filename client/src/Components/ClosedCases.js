@@ -687,62 +687,116 @@ export default function ClosedCases() {
                                 <div className="collapse w-100 mt-2" id={collapseId}>
                                     <div className="container-fluid">
                                         <div className="row">
-                                            {formSchemas.map((form, formIndex) =>
-                                                Array.isArray(form.showIn) && form.showIn.includes(filterType) &&
-                                                form.inputFields.map((inputField, index) => (
-                                                    <div
-                                                        key={`${formIndex}-${index}`}
-                                                        className={inputField.type === "group" ? "col-12 mb-3" : "col-12 col-sm-6 col-md-3 mb-3"}
-                                                    >
-                                                        {inputField.type === "group" ? (
-                                                            <div>
-                                                                <p className="fw-bold">{inputField.label}:</p>
-                                                                <div className="row">
-                                                                    {inputField.fields.map((subField, idx) => (
-                                                                        <div key={idx} className="col-12 col-sm-6 col-md-3 mb-2">
-                                                                            <label>{subField.label}:</label>
-                                                                            <input
-                                                                                type={subField.label.toLowerCase().includes("date") ? "date" : "text"}
-                                                                                className="form-control"
-                                                                                placeholder={`Enter ${subField.label}`}
-                                                                                value={caseDetails[subField.label] ?? ""}
-                                                                                disabled
-                                                                            />
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        ) : inputField.type === "option" ? (
-                                                            <div>
-                                                                <p className="fw-bold">{inputField.label}:</p>
-                                                                <select
-                                                                    className="form-select"
-                                                                    disabled
-                                                                    value={caseDetails[inputField.label] ?? ""}
-                                                                >
-                                                                    <option value="">Select</option>
-                                                                    {inputField.fields.map((subField, idx) => (
-                                                                        <option key={idx} value={subField.label}>
-                                                                            {subField.label}
-                                                                        </option>
-                                                                    ))}
-                                                                </select>
-                                                            </div>
-                                                        ) : (
-                                                            <div>
-                                                                <p className="fw-bold">{inputField.label}:</p>
-                                                                <input
-                                                                    type={inputField.label.toLowerCase().includes("date") ? "date" : "text"}
-                                                                    className="form-control"
-                                                                    placeholder={`Enter ${inputField.label}`}
-                                                                    value={caseDetails[inputField.label] ?? ""}
-                                                                    disabled
-                                                                />
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ))
-                                            )}
+                                            {(() => {
+    const chargedEntry = formSchemas.find(form =>
+        form.inputFields.some(field => field.label === "No. of Charged Official")
+    );
+    const chargedSNo = chargedEntry?.SNo ?? Infinity;
+    const repeatCount = parseInt(caseDetails["No. of Charged Official"]) || 0;
+
+    // Filter function with custom logic for "DAR Action"
+    const shouldShowForm = (form) => {
+        if (!Array.isArray(form.showIn)) return false;
+
+        if (filterType === "DAR Action") {
+            if (form.showIn.length === 1 && form.showIn[0] === "DAR Action") return true;
+            return form.showIn.includes("DAR Action") && form.showIn.includes(caseDetails["Type Of Check"]);
+        }
+
+        return form.showIn.includes(filterType);
+    };
+
+    // Render single input field
+    const renderInputField = (inputField, repeatIndex = null) => {
+        const labelSuffix = repeatIndex !== null ? ` ${repeatIndex + 1}` : "";
+        const valueKey = repeatIndex !== null ? `${inputField.label}_${repeatIndex}` : inputField.label;
+
+        return (
+            <div
+                key={valueKey}
+                className={inputField.type === "group" ? "col-12 mb-3" : "col-12 col-sm-6 col-md-3 mb-3"}
+            >
+                {inputField.type === "group" ? (
+                    <div>
+                        <p className="fw-bold">{inputField.label}:</p>
+                        <div className="row">
+                            {inputField.fields.map((subField, idx) => {
+                                const subKey = repeatIndex !== null ? `${subField.label}_${repeatIndex}` : subField.label;
+                                return (
+                                    <div key={idx} className="col-12 col-sm-6 col-md-3 mb-2">
+                                        <label>{subField.label}:</label>
+                                        <input
+                                            type={subField.label.toLowerCase().includes("date") ? "date" : "text"}
+                                            className="form-control"
+                                            placeholder={`Enter ${subField.label}`}
+                                            value={caseDetails[subKey] ?? ""}
+                                            disabled
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ) : inputField.type === "option" ? (
+                    <div>
+                        <p className="fw-bold">{inputField.label + labelSuffix}:</p>
+                        <select
+                            className="form-select"
+                            disabled
+                            value={caseDetails[valueKey] ?? ""}
+                        >
+                            <option value="">Select</option>
+                            {inputField.fields.map((subField, idx) => (
+                                <option key={idx} value={subField.label}>
+                                    {subField.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                ) : (
+                    <div>
+                        <p className="fw-bold">{inputField.label + labelSuffix}:</p>
+                        <input
+                            type={inputField.label.toLowerCase().includes("date") ? "date" : "text"}
+                            className="form-control"
+                            placeholder={`Enter ${inputField.label}`}
+                            value={caseDetails[valueKey] ?? ""}
+                            disabled
+                        />
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    return (
+        <>
+            {/* Static fields before No. of Charged Official */}
+            {formSchemas
+                .filter(form => shouldShowForm(form) && form.SNo <= chargedSNo)
+                .flatMap((form, formIndex) =>
+                    form.inputFields.map((inputField, index) =>
+                        renderInputField(inputField)
+                    )
+                )}
+
+            {/* Repeated groups after No. of Charged Official */}
+            {Array.from({ length: repeatCount }).map((_, repeatIndex) => (
+                <div key={`repeat-${repeatIndex}`} className="row mb-3">
+                    <p className="fw-bold rounded repeatIndex"> Charged Official ({repeatIndex + 1})</p>
+                    {formSchemas
+                        .filter(form => shouldShowForm(form) && form.SNo > chargedSNo)
+                        .flatMap((form, formIndex) =>
+                            form.inputFields.map((inputField, index) =>
+                                renderInputField(inputField, repeatIndex)
+                            )
+                        )}
+                </div>
+            ))}
+        </>
+    );
+})()}
+
                                         </div>
                                     </div>
                                 </div>

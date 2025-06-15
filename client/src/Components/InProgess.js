@@ -696,19 +696,39 @@ export default function InProgress() {
                                                 const chargedSNo = chargedEntry?.SNo ?? Infinity;
                                                 const repeatCount = parseInt(caseDetails["No. of Charged Official"]) || 0;
 
-                                                // First render forms before 'No. of Charged Official'
+                                                // ✅ Filter function including DAR Action logic
+                                                const shouldIncludeForm = (form) => {
+                                                    if (!Array.isArray(form.showIn)) return false;
+
+                                                    if (filterType !== "DAR Action") {
+                                                        return form.showIn.includes(filterType);
+                                                    }
+
+                                                    const showInSet = new Set(form.showIn.map(i => i.toLowerCase()));
+                                                    const typeOfCheck = caseDetails["Type Of Check"]?.toLowerCase() ?? "";
+
+                                                    if (showInSet.size === 1 && showInSet.has("dar action")) {
+                                                        return true;
+                                                    }
+
+                                                    return showInSet.has("dar action") && showInSet.has(typeOfCheck);
+                                                };
+
+                                                // 🧩 Static fields (before 'No. of Charged Official')
                                                 const staticFields = formSchemas
-                                                    .filter(form => form.SNo <= chargedSNo && Array.isArray(form.showIn) && form.showIn.includes(filterType))
+                                                    .filter(form => form.SNo <= chargedSNo && shouldIncludeForm(form))
                                                     .flatMap((form, formIndex) =>
-                                                        form.inputFields.map((inputField, index) => renderField(inputField, formIndex, index))
+                                                        form.inputFields.map((inputField, index) =>
+                                                            renderField(inputField, formIndex, index)
+                                                        )
                                                     );
 
-                                                // Then render repeating group blocks (1), (2), (3)...
+                                                // 🔁 Repeating groups (after 'No. of Charged Official')
                                                 const repeatingGroups = Array.from({ length: repeatCount }).map((_, repeatIndex) => (
                                                     <div key={`repeat-${repeatIndex}`} className="row mb-3">
-                                                        <p className="fw-bold rounded repeatIndex"> Charged Offical ({repeatIndex + 1})</p>
+                                                        <p className="fw-bold rounded repeatIndex"> Charged Official ({repeatIndex + 1})</p>
                                                         {formSchemas
-                                                            .filter(form => form.SNo > chargedSNo && Array.isArray(form.showIn) && form.showIn.includes(filterType))
+                                                            .filter(form => form.SNo > chargedSNo && shouldIncludeForm(form))
                                                             .flatMap((form, formIndex) =>
                                                                 form.inputFields.map((inputField, index) =>
                                                                     renderField(inputField, formIndex, index, repeatIndex)
@@ -724,7 +744,7 @@ export default function InProgress() {
                                                     </>
                                                 );
 
-                                                // Main reusable field renderer
+                                                // 📦 Reusable input field renderer
                                                 function renderField(inputField, formIndex, index, repeatIndex = null) {
                                                     const fieldKey = `${formIndex}-${index}${repeatIndex !== null ? `-${repeatIndex}` : ""}`;
                                                     const fieldLabel = repeatIndex !== null
