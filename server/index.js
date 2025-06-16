@@ -19,6 +19,19 @@ app.use(express.json());
 const PORT = process.env.PORT;
 const secret = process.env.SECRET_KEY;
 
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) return res.sendStatus(401);
+
+    jwt.verify(token, secret, (err, user) => {
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
+    });
+};
+
 // Save form template
 app.post('/add-form', async (req, res) => {
     try {
@@ -59,15 +72,23 @@ app.post('/post-case', async (req, res) => {
     }
 });
 
-app.get('/get-cases', async (req, res) => {
+app.get('/get-cases', authenticateToken, async (req, res) => {
     try {
-        const cases = await Case.find().sort({ SNo: 1 });
+        let cases = await Case.find().sort({ SNo: 1 });
+
+        if (req.user.role !== 'admin' && req.user.role !== 'DAR Action') {
+            cases = cases.filter(c =>
+                c.inputFields &&
+                c.inputFields["Name Of Concern VI"] === req.user.username
+            );
+        }
+
         res.status(200).json(cases);
     } catch (error) {
-        console.error('Error fetching cases:', error);
         res.status(500).json({ error: 'Server error.' });
     }
 });
+
 
 app.put('/update-case/:id', async (req, res) => {
     try {
@@ -274,13 +295,18 @@ app.delete('/admin/:id', async (req, res) => {
 
 // --- User Login --- //
 app.post('/user/login', async (req, res) => {
-  const { username, password } = req.body;
+    const { username, password } = req.body;
 
-  const user = await User.findOne({ username, password });
-  if (!user) return res.status(401).send({ message: 'Invalid credentials' });
+    const user = await User.findOne({ username, password });
+    if (!user) return res.status(401).send({ message: 'Invalid credentials' });
 
-  const token = jwt.sign({ id: user._id, role: user.role }, secret);
-  res.send({ token, role: user.role });  // send role directly
+    // FIX: Make sure this field is exactly correct
+    const token = jwt.sign(
+        { id: user._id, role: user.role, username: user.username },
+        secret
+    );
+
+    res.send({ token, role: user.role });
 });
 
 

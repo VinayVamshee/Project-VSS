@@ -1183,3 +1183,12 @@ button {
     padding: 0 6px !important;
   }
 }
+
+
+.toast-message {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  min-width: 250px;
+}

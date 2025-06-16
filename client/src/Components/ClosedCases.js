@@ -21,6 +21,8 @@ export default function ClosedCases() {
     const [IsUserLoggedIn, setIsUserLoggedIn] = useState(false);
     const [IsAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
+    const [authToken, setAuthToken] = useState('');
+
     useEffect(() => {
         const userToken = localStorage.getItem('userToken');
         const adminToken = localStorage.getItem('adminToken');
@@ -34,6 +36,7 @@ export default function ClosedCases() {
         if (userToken) {
             setIsUserLoggedIn(true);
             setUserRole(role || '');
+            setAuthToken(userToken);
         } else {
             setIsUserLoggedIn(false);
             setUserRole('');
@@ -41,30 +44,46 @@ export default function ClosedCases() {
 
         if (adminToken) {
             setIsAdminLoggedIn(true);
+            setAuthToken(adminToken);
         } else {
             setIsAdminLoggedIn(false);
         }
     }, [navigate]);
 
+    // eslint-disable-next-line
+    const [loadingData, setLoadingData] = useState(true);
+
+    const fetchData = async () => {
+        setLoadingData(true);
+
+        try {
+            // Fetch cases
+            const caseRes = await axios.get('https://vss-server.vercel.app/get-cases', {
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                },
+            });
+
+            const sortedCases = caseRes.data.sort((a, b) => a.SNo - b.SNo);
+            setCaseData(sortedCases);
+
+            const formRes = await axios.get('https://vss-server.vercel.app/get-forms');
+
+            const sortedForms = formRes.data.sort((a, b) => a.SNo - b.SNo);
+            setFormSchemas(sortedForms);
+        } catch (err) {
+            console.error('❌ Error during fetchData:', err.response?.data || err.message || err);
+        } finally {
+            setLoadingData(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Fetch cases
-                const caseRes = await axios.get('https://vss-server.vercel.app/get-cases');
-                const sortedCases = caseRes.data.sort((a, b) => a.SNo - b.SNo);
-                setCaseData(sortedCases);
-
-                // Fetch form schema
-                const formRes = await axios.get('https://vss-server.vercel.app/get-forms');
-                const sortedForms = formRes.data.sort((a, b) => a.SNo - b.SNo);
-                setFormSchemas(sortedForms);
-            } catch (err) {
-                console.error('Error fetching data:', err);
-            }
-        };
-
-        fetchData();
-    }, []);
+        if (authToken) {
+            fetchData();
+        }
+        // eslint-disable-next-line
+    }, [authToken]);
 
     // Function to close the case
     // const closeCase = async (caseId) => {
@@ -677,7 +696,7 @@ export default function ClosedCases() {
                                     {/* ReOpen Case Button */}
                                     {
                                         filterType !== "All" &&
-                                        (IsAdminLoggedIn || filterType === userRole) &&
+                                        (IsAdminLoggedIn || userRole.includes(filterType)) &&
                                         (
                                             <>
                                                 <button

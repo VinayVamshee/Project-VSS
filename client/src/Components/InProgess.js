@@ -16,11 +16,14 @@ export default function InProgress() {
     const [filters, setFilters] = useState([]);
     const [selectedField, setSelectedField] = useState("");
     const [searchText, setSearchText] = useState("");
+    const [statusMessage, setStatusMessage] = useState("");
+    const [messageType, setMessageType] = useState(""); // "success" or "danger"
 
     const [userRole, setUserRole] = useState('');
     // eslint-disable-next-line 
     const [IsUserLoggedIn, setIsUserLoggedIn] = useState(false);
     const [IsAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+    const [authToken, setAuthToken] = useState('');
 
     useEffect(() => {
         const userToken = localStorage.getItem('userToken');
@@ -32,66 +35,79 @@ export default function InProgress() {
             return;
         }
 
-        if (userToken) {
-            setIsUserLoggedIn(true);
-            setUserRole(role || '');
-        } else {
-            setIsUserLoggedIn(false);
-            setUserRole('');
-        }
-
         if (adminToken) {
             setIsAdminLoggedIn(true);
-        } else {
-            setIsAdminLoggedIn(false);
+            setAuthToken(adminToken);
+            setUserRole('admin');
+        } else if (userToken) {
+            setIsUserLoggedIn(true);
+            setAuthToken(userToken);
+            setUserRole(role || '');
         }
     }, [navigate]);
 
+    const [loadingData, setLoadingData] = useState(true);
+    const [closingCaseId, setClosingCaseId] = useState(null); // For per-case loading indicator
 
     const fetchData = async () => {
+        setLoadingData(true);
         try {
             // Fetch cases
-            const caseRes = await axios.get('https://vss-server.vercel.app/get-cases');
+            const caseRes = await axios.get('https://vss-server.vercel.app/get-cases', {
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                },
+            });
             const sortedCases = caseRes.data.sort((a, b) => a.SNo - b.SNo);
             setCaseData(sortedCases);
 
-            // Fetch form schema
             const formRes = await axios.get('https://vss-server.vercel.app/get-forms');
+
             const sortedForms = formRes.data.sort((a, b) => a.SNo - b.SNo);
             setFormSchemas(sortedForms);
         } catch (err) {
-            console.error('Error fetching data:', err);
+            console.error('❌ Error during fetchData:', err.response?.data || err.message || err);
+        } finally {
+            setLoadingData(false);
         }
     };
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        if (authToken) {
+            fetchData();
+        }
+        // eslint-disable-next-line
+    }, [authToken]);
 
     // Function to close the case
     const closeCase = async (caseId) => {
-        const confirmation = window.confirm(
-            "Are you sure you want to close this case? This action cannot be undone."
-        );
+        const confirmation = window.confirm("Are you sure you want to close this case?");
+        if (!confirmation) return;
 
-        if (confirmation) {
-            try {
-                await axios.put(`https://vss-server.vercel.app/close-case/${caseId}`);
-                alert('Case closed successfully');
-                setCaseData((prevData) =>
-                    prevData.map((caseItem) =>
-                        caseItem._id === caseId ? { ...caseItem, status: 'Closed' } : caseItem
-                    )
-                );
-            } catch (err) {
-                console.error('Close case error:', err);
-                alert('Failed to close case');
-            }
-        } else {
-            alert("Case closure has been canceled.");
+        setClosingCaseId(caseId);
+        try {
+            await axios.put(`https://vss-server.vercel.app/close-case/${caseId}`);
+
+            // ✅ Show success message
+            setStatusMessage("Case closed successfully");
+            setMessageType("success");
+
+            setCaseData(prev =>
+                prev.map(item =>
+                    item._id === caseId ? { ...item, status: 'Closed' } : item
+                )
+            );
+            fetchData();
+        } catch (err) {
+            console.error('Close case error:', err);
+
+            // ❌ Show error message
+            setStatusMessage("Failed to close case");
+            setMessageType("danger");
+        } finally {
+            setClosingCaseId(null);
         }
     };
-
     const filteredCases = CaseData.filter((caseItem) => {
         if (caseItem.Closed === false) {
             const type = caseItem.inputFields?.["Type Of Check"];
@@ -153,49 +169,48 @@ export default function InProgress() {
     const [selectAll, setSelectAll] = useState(false);
 
     const handleDownloadExcel = () => {
-    const selectedCaseData = CaseData.filter(caseItem => selectedCases.includes(caseItem._id));
+        const selectedCaseData = CaseData.filter(caseItem => selectedCases.includes(caseItem._id));
 
-    const formattedData = selectedCaseData.map(caseItem => {
-        const flatCase = {
-            _id: caseItem._id,
-            Closed: caseItem.Closed,
-            checkClose: caseItem.checkClose,
-        };
+        const formattedData = selectedCaseData.map(caseItem => {
+            const flatCase = {
+                _id: caseItem._id,
+                Closed: caseItem.Closed,
+                checkClose: caseItem.checkClose,
+            };
 
-        if (caseItem.inputFields) {
-            Object.entries(caseItem.inputFields).forEach(([key, value]) => {
-                flatCase[key] = value;
-            });
-        }
+            if (caseItem.inputFields) {
+                Object.entries(caseItem.inputFields).forEach(([key, value]) => {
+                    flatCase[key] = value;
+                });
+            }
 
-        return flatCase;
-    });
+            return flatCase;
+        });
 
-    const ws = XLSX.utils.json_to_sheet(formattedData);
+        const ws = XLSX.utils.json_to_sheet(formattedData);
 
-    // Insert a blank row AFTER headers (i.e., between row 1 and 2)
-    const range = XLSX.utils.decode_range(ws['!ref']);
-    for (let R = range.e.r; R >= 1; --R) {
-        for (let C = range.s.c; C <= range.e.c; ++C) {
-            const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
-            if (cell) {
-                ws[XLSX.utils.encode_cell({ r: R + 1, c: C })] = { ...cell };
-                delete ws[XLSX.utils.encode_cell({ r: R, c: C })];
+        // Insert a blank row AFTER headers (i.e., between row 1 and 2)
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for (let R = range.e.r; R >= 1; --R) {
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
+                if (cell) {
+                    ws[XLSX.utils.encode_cell({ r: R + 1, c: C })] = { ...cell };
+                    delete ws[XLSX.utils.encode_cell({ r: R, c: C })];
+                }
             }
         }
-    }
 
-    // Expand the range to reflect the shifted data
-    range.e.r += 1;
-    ws['!ref'] = XLSX.utils.encode_range(range);
+        // Expand the range to reflect the shifted data
+        range.e.r += 1;
+        ws['!ref'] = XLSX.utils.encode_range(range);
 
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Cases");
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Cases");
 
-    const today = new Date().toISOString().split("T")[0];
-    XLSX.writeFile(wb, `Reports - ${today}.xlsx`);
-};
-
+        const today = new Date().toISOString().split("T")[0];
+        XLSX.writeFile(wb, `Reports - ${today}.xlsx`);
+    };
 
     const componentRef = useRef(null);
     const getMatchingFieldKeys = (selectedLabels, inputFields) => {
@@ -264,10 +279,18 @@ export default function InProgress() {
     const [openCollapses, setOpenCollapses] = useState([]);
     const [dateRange, setDateRange] = useState({ from: "", to: "" });
     const [selectedDateRangeField, setSelectedDateRangeField] = useState("");
+    const [transferringCaseId, setTransferringCaseId] = useState(null);
+    useEffect(() => {
+        if (statusMessage) {
+            const timer = setTimeout(() => {
+                setStatusMessage("");
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [statusMessage]);
 
     return (
         <div className="Home">
-
             <div className="Grid">
 
                 <div className='Filter-Grid'>
@@ -631,348 +654,381 @@ export default function InProgress() {
                     </div>
                 </div>
 
-                {filteredCases.length > 0 ? (
-                    filteredCases.map((caseItem, index) => {
-                        const collapseId = `collapseCaseInfo-${index}`;
-                        const caseDetails = caseItem.inputFields || {};
-                        return (
-                            <div key={index} className={`Case-Item ${openCollapses.includes(collapseId) ? 'active' : ''}`} style={{ animationDelay: `${index * 0.1}s` }}>
-                                <div className="Case-OverView">
-                                    <div className="Base-Case">
-                                        <i
-                                            className={`fa-solid fa-circle-half-stroke fa-xl select-icon ${selectedCases.includes(caseItem._id) ? 'rotate' : ''}`}
-                                            style={{
-                                                color: selectedCases.includes(caseItem._id) ? 'blue' : 'goldenrod',
-                                                cursor: 'pointer',
-                                                transition: 'color 0.3s ease',
-                                            }}
-                                            onClick={(e) => {
-                                                e.currentTarget.classList.add('rotate');
-                                                setSelectedCases((prev) => {
-                                                    if (prev.includes(caseItem._id)) {
-                                                        return prev.filter(id => id !== caseItem._id);
-                                                    } else {
-                                                        return [...prev, caseItem._id];
-                                                    }
-                                                });
-                                            }}
-                                        ></i>
-                                        <div>{caseDetails['PC-DC Number']}</div>
-                                        <div>
-                                            <span style={{ fontWeight: 'bold' }}>DOC :</span>{" "}
-                                            {caseDetails["Date Of Check"]
-                                                ? (() => {
-                                                    const date = new Date(caseDetails["Date Of Check"]);
-                                                    if (isNaN(date.getTime())) return caseDetails["Date Of Check"];
-                                                    const day = String(date.getDate()).padStart(2, "0");
-                                                    const month = String(date.getMonth() + 1).padStart(2, "0");
-                                                    const year = date.getFullYear();
-                                                    return `${day}-${month}-${year}`;
-                                                })()
-                                                : "Not filled"}
+                {loadingData ? (
+                    <div className="text-center my-5">
+                        <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                ) :
+                    filteredCases.length > 0 ? (
+                        filteredCases.map((caseItem, index) => {
+                            const collapseId = `collapseCaseInfo-${index}`;
+                            const caseDetails = caseItem.inputFields || {};
+                            return (
+                                <div key={index} className={`Case-Item ${openCollapses.includes(collapseId) ? 'active' : ''}`} style={{ animationDelay: `${index * 0.1}s` }}>
+                                    <div className="Case-OverView">
+                                        <div className="Base-Case">
+                                            <i
+                                                className={`fa-solid fa-circle-half-stroke fa-xl select-icon ${selectedCases.includes(caseItem._id) ? 'rotate' : ''}`}
+                                                style={{
+                                                    color: selectedCases.includes(caseItem._id) ? 'blue' : 'goldenrod',
+                                                    cursor: 'pointer',
+                                                    transition: 'color 0.3s ease',
+                                                }}
+                                                onClick={(e) => {
+                                                    e.currentTarget.classList.add('rotate');
+                                                    setSelectedCases((prev) => {
+                                                        if (prev.includes(caseItem._id)) {
+                                                            return prev.filter(id => id !== caseItem._id);
+                                                        } else {
+                                                            return [...prev, caseItem._id];
+                                                        }
+                                                    });
+                                                }}
+                                            ></i>
+                                            <div>{caseDetails['PC-DC Number']}</div>
+                                            <div>
+                                                <span style={{ fontWeight: 'bold' }}>DOC :</span>{" "}
+                                                {caseDetails["Date Of Check"]
+                                                    ? (() => {
+                                                        const date = new Date(caseDetails["Date Of Check"]);
+                                                        if (isNaN(date.getTime())) return caseDetails["Date Of Check"];
+                                                        const day = String(date.getDate()).padStart(2, "0");
+                                                        const month = String(date.getMonth() + 1).padStart(2, "0");
+                                                        const year = date.getFullYear();
+                                                        return `${day}-${month}-${year}`;
+                                                    })()
+                                                    : "Not filled"}
+                                            </div>
+
+                                            <div><span style={{ fontWeight: 'bold' }}></span> {caseDetails["Division"] || "Not filled"}</div>
+                                            <div><span style={{ fontWeight: 'bold' }}></span> {caseDetails["Department"] || "Not filled"}</div>
+                                            <div><span style={{ fontWeight: 'bold' }}>Name of CVI :</span> {caseDetails["Name Of Concern VI"] || "Not filled"}</div>
+                                            <div><span style={{ fontWeight: 'bold' }}>Decision :</span> {caseDetails["SDGM Decision/Recommendation"] || "Not filled"}</div>
                                         </div>
 
-                                        <div><span style={{ fontWeight: 'bold' }}></span> {caseDetails["Division"] || "Not filled"}</div>
-                                        <div><span style={{ fontWeight: 'bold' }}></span> {caseDetails["Department"] || "Not filled"}</div>
-                                        <div><span style={{ fontWeight: 'bold' }}>Name of CVI :</span> {caseDetails["Name Of Concern VI"] || "Not filled"}</div>
-                                        <div><span style={{ fontWeight: 'bold' }}>Decision :</span> {caseDetails["SDGM Decision/Recommendation"] || "Not filled"}</div>
-                                    </div>
-
-                                    {
-                                        filterType !== "All" &&
-                                        (IsAdminLoggedIn || filterType === userRole) && (
-                                            <>
-                                                {editMode === caseItem._id ? (
-                                                    <button
-                                                        className="btn btn-sm btn-secondary"
-                                                        onClick={() => {
-                                                            setEditMode(null);
-                                                            setUpdatedFields({});
-                                                        }}
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                ) : (
-                                                    <button
-                                                        className="btn btn-sm btn-warning"
-                                                        style={{ whiteSpace: 'nowrap' }}
-                                                        onClick={() => {
-                                                            setEditMode(caseItem._id);
-                                                            setUpdatedFields(caseItem.inputFields || {});
-                                                        }}
-                                                    >
-                                                        <i className="fa-solid fa-pen-to-square fa-lg me-2"></i> Edit Case
-                                                    </button>
-                                                )}
-                                                <button
-                                                    className="btn"
-                                                    type="button"
-                                                    data-bs-toggle="collapse"
-                                                    data-bs-target={`#${collapseId}`}
-                                                    aria-expanded={openCollapses.includes(collapseId)}
-                                                    aria-controls={collapseId}
-                                                    onClick={() => {
-                                                        setOpenCollapses(prev =>
-                                                            prev.includes(collapseId)
-                                                                ? prev.filter(id => id !== collapseId) // close if already open
-                                                                : [...prev, collapseId]               // open if not already open
-                                                        );
-                                                    }}
-
-                                                >
-                                                    <i className="fa-solid fa-square-caret-up fa-rotate-180 fa-lg"></i>
-                                                </button>
-                                            </>
-                                        )
-                                    }
-                                </div>
-
-                                <div className="collapse w-100 mt-2" id={collapseId}>
-                                    <div className="container-fluid">
-                                        <div className="row">
-                                            {(() => {
-                                                const chargedEntry = formSchemas.find(form =>
-                                                    form.inputFields.some(field => field.label === "No. of Charged Official")
-                                                );
-                                                const chargedSNo = chargedEntry?.SNo ?? Infinity;
-                                                const repeatCount = parseInt(caseDetails["No. of Charged Official"]) || 0;
-
-                                                // ✅ Filter function including DAR Action logic
-                                                const shouldIncludeForm = (form) => {
-                                                    if (!Array.isArray(form.showIn)) return false;
-
-                                                    if (filterType !== "DAR Action") {
-                                                        return form.showIn.includes(filterType);
-                                                    }
-
-                                                    const showInSet = new Set(form.showIn.map(i => i.toLowerCase()));
-                                                    const typeOfCheck = caseDetails["Type Of Check"]?.toLowerCase() ?? "";
-
-                                                    if (showInSet.size === 1 && showInSet.has("dar action")) {
-                                                        return true;
-                                                    }
-
-                                                    return showInSet.has("dar action") && showInSet.has(typeOfCheck);
-                                                };
-
-                                                // 🧩 Static fields (before 'No. of Charged Official')
-                                                const staticFields = formSchemas
-                                                    .filter(form => form.SNo <= chargedSNo && shouldIncludeForm(form))
-                                                    .flatMap((form, formIndex) =>
-                                                        form.inputFields.map((inputField, index) =>
-                                                            renderField(inputField, formIndex, index)
-                                                        )
-                                                    );
-
-                                                // 🔁 Repeating groups (after 'No. of Charged Official')
-                                                const repeatingGroups = Array.from({ length: repeatCount }).map((_, repeatIndex) => (
-                                                    <div key={`repeat-${repeatIndex}`} className="row mb-3">
-                                                        <p className="fw-bold rounded repeatIndex"> Charged Official ({repeatIndex + 1})</p>
-                                                        {formSchemas
-                                                            .filter(form => form.SNo > chargedSNo && shouldIncludeForm(form))
-                                                            .flatMap((form, formIndex) =>
-                                                                form.inputFields.map((inputField, index) =>
-                                                                    renderField(inputField, formIndex, index, repeatIndex)
-                                                                )
-                                                            )}
-                                                    </div>
-                                                ));
-
-                                                return (
-                                                    <>
-                                                        {staticFields}
-                                                        {repeatingGroups}
-                                                    </>
-                                                );
-
-                                                // 📦 Reusable input field renderer
-                                                function renderField(inputField, formIndex, index, repeatIndex = null) {
-                                                    const fieldKey = `${formIndex}-${index}${repeatIndex !== null ? `-${repeatIndex}` : ""}`;
-                                                    const fieldLabel = repeatIndex !== null
-                                                        ? `${inputField.label} ${repeatIndex + 1}`
-                                                        : inputField.label;
-                                                    const valueKey = repeatIndex !== null
-                                                        ? `${inputField.label}_${repeatIndex}`
-                                                        : inputField.label;
-
-                                                    return (
-                                                        <div
-                                                            key={fieldKey}
-                                                            className={inputField.type === "group" ? "col-12 mb-3" : "col-12 col-sm-6 col-md-3 mb-3"}
-                                                        >
-                                                            {inputField.type === "group" ? (
-                                                                <div>
-                                                                    <p className="fw-bold">{inputField.label}:</p>
-                                                                    <div className="row">
-                                                                        {inputField.fields.map((subField, idx) => {
-                                                                            const subValueKey = repeatIndex !== null
-                                                                                ? `${subField.label}_${repeatIndex}`
-                                                                                : subField.label;
-                                                                            return (
-                                                                                <div key={idx} className="col-12 col-sm-6 col-md-3 mb-2">
-                                                                                    <label>{subField.label}:</label>
-                                                                                    <input
-                                                                                        type={subField.label.toLowerCase().includes("date") ? "date" : "text"}
-                                                                                        className="form-control"
-                                                                                        placeholder={`Enter ${subField.label}`}
-                                                                                        value={
-                                                                                            editMode === caseItem._id
-                                                                                                ? updatedFields[subValueKey] ?? caseDetails[subValueKey] ?? ""
-                                                                                                : caseDetails[subValueKey] ?? ""
-                                                                                        }
-                                                                                        disabled={editMode !== caseItem._id}
-                                                                                        onChange={(e) => {
-                                                                                            if (editMode === caseItem._id) {
-                                                                                                setUpdatedFields((prev) => ({
-                                                                                                    ...prev,
-                                                                                                    [subValueKey]: e.target.value
-                                                                                                }));
-                                                                                            }
-                                                                                        }}
-                                                                                    />
-                                                                                </div>
-                                                                            );
-                                                                        })}
-                                                                    </div>
-                                                                </div>
-                                                            ) : inputField.type === "option" ? (
-                                                                <div>
-                                                                    <p className="fw-bold">{fieldLabel}:</p>
-                                                                    <select
-                                                                        className="form-select"
-                                                                        disabled={editMode !== caseItem._id}
-                                                                        value={
-                                                                            editMode === caseItem._id
-                                                                                ? updatedFields[valueKey] ?? caseDetails[valueKey] ?? ""
-                                                                                : caseDetails[valueKey] ?? ""
-                                                                        }
-                                                                        onChange={(e) => {
-                                                                            if (editMode === caseItem._id) {
-                                                                                setUpdatedFields((prev) => ({
-                                                                                    ...prev,
-                                                                                    [valueKey]: e.target.value
-                                                                                }));
-                                                                            }
-                                                                        }}
-                                                                    >
-                                                                        <option value="">Select</option>
-                                                                        {inputField.fields.map((subField, idx) => (
-                                                                            <option key={idx} value={subField.label}>
-                                                                                {subField.label}
-                                                                            </option>
-                                                                        ))}
-                                                                    </select>
-                                                                </div>
-                                                            ) : (
-                                                                <div>
-                                                                    <p className="fw-bold">{fieldLabel}:</p>
-                                                                    <input
-                                                                        type={inputField.label.toLowerCase().includes("date") ? "date" : "text"}
-                                                                        className="form-control"
-                                                                        placeholder={`Enter ${inputField.label}`}
-                                                                        value={
-                                                                            editMode === caseItem._id
-                                                                                ? updatedFields[valueKey] ?? caseDetails[valueKey] ?? ""
-                                                                                : caseDetails[valueKey] ?? ""
-                                                                        }
-                                                                        disabled={editMode !== caseItem._id}
-                                                                        onChange={(e) => {
-                                                                            if (editMode === caseItem._id) {
-                                                                                setUpdatedFields((prev) => ({
-                                                                                    ...prev,
-                                                                                    [valueKey]: e.target.value
-                                                                                }));
-                                                                            }
-                                                                        }}
-                                                                    />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                }
-                                            })()}
-                                        </div>
-
-                                        {/* Action buttons */}
-                                        <div className="mt-3">
-                                            {editMode === caseItem._id ? (
+                                        {
+                                            filterType !== "All" &&
+                                            (IsAdminLoggedIn || userRole.includes(filterType)) && (
                                                 <>
-                                                    <button
-                                                        className="btn btn-sm btn-success me-2"
-                                                        onClick={async () => {
-                                                            try {
-                                                                await axios.put(`https://vss-server.vercel.app/update-case/${caseItem._id}`, {
-                                                                    inputFields: updatedFields,
-                                                                    closed: caseItem.Closed
-                                                                });
-                                                                alert('Case updated successfully');
+                                                    {editMode === caseItem._id ? (
+                                                        <button
+                                                            className="btn btn-sm btn-secondary"
+                                                            onClick={() => {
                                                                 setEditMode(null);
                                                                 setUpdatedFields({});
-                                                                fetchData();
-                                                            } catch (err) {
-                                                                console.error('Update error:', err);
-                                                                alert('Failed to update case');
-                                                            }
+                                                            }}
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            className="btn btn-sm btn-warning"
+                                                            style={{ whiteSpace: 'nowrap' }}
+                                                            onClick={() => {
+                                                                setEditMode(caseItem._id);
+                                                                setUpdatedFields(caseItem.inputFields || {});
+                                                            }}
+                                                        >
+                                                            <i className="fa-solid fa-pen-to-square fa-lg me-2"></i> Edit Case
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        className="btn"
+                                                        type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target={`#${collapseId}`}
+                                                        aria-expanded={openCollapses.includes(collapseId)}
+                                                        aria-controls={collapseId}
+                                                        onClick={() => {
+                                                            setOpenCollapses(prev =>
+                                                                prev.includes(collapseId)
+                                                                    ? prev.filter(id => id !== collapseId) // close if already open
+                                                                    : [...prev, collapseId]               // open if not already open
+                                                            );
                                                         }}
-                                                    >
-                                                        Save
-                                                    </button>
 
+                                                    >
+                                                        <i className="fa-solid fa-square-caret-up fa-rotate-180 fa-lg"></i>
+                                                    </button>
                                                 </>
-                                            ) :
-                                                <>
-                                                    {caseItem.checkClose && (
+                                            )
+                                        }
+                                    </div>
+
+                                    <div className="collapse w-100 mt-2" id={collapseId}>
+                                        <div className="container-fluid">
+                                            <div className="row">
+                                                {(() => {
+                                                    const chargedEntry = formSchemas.find(form =>
+                                                        form.inputFields.some(field => field.label === "No. of Charged Official")
+                                                    );
+                                                    const chargedSNo = chargedEntry?.SNo ?? Infinity;
+                                                    const repeatCount = parseInt(caseDetails["No. of Charged Official"]) || 0;
+
+                                                    const shouldIncludeForm = (form) => {
+                                                        if (!Array.isArray(form.showIn)) return false;
+
+                                                        if (filterType !== "DAR Action") {
+                                                            return form.showIn.includes(filterType);
+                                                        }
+
+                                                        const showInSet = new Set(form.showIn.map(i => i.toLowerCase()));
+                                                        const typeOfCheck = caseDetails["Type Of Check"]?.toLowerCase() ?? "";
+
+                                                        if (showInSet.size === 1 && showInSet.has("dar action")) return true;
+
+                                                        return showInSet.has("dar action") && showInSet.has(typeOfCheck);
+                                                    };
+
+                                                    const staticFields = formSchemas
+                                                        .filter(form => form.SNo <= chargedSNo && shouldIncludeForm(form))
+                                                        .flatMap((form, formIndex) =>
+                                                            form.inputFields.map((inputField, index) =>
+                                                                renderField(inputField, formIndex, index)
+                                                            )
+                                                        );
+
+                                                    const repeatingGroups = Array.from({ length: repeatCount }).map((_, repeatIndex) => (
+                                                        <div key={`repeat-${repeatIndex}`} className="row mb-3">
+                                                            <p className="fw-bold rounded repeatIndex"> Charged Official ({repeatIndex + 1})</p>
+                                                            {formSchemas
+                                                                .filter(form => form.SNo > chargedSNo && shouldIncludeForm(form))
+                                                                .flatMap((form, formIndex) =>
+                                                                    form.inputFields.map((inputField, index) =>
+                                                                        renderField(inputField, formIndex, index, repeatIndex)
+                                                                    )
+                                                                )}
+                                                        </div>
+                                                    ));
+
+                                                    return (
+                                                        <>
+                                                            {staticFields}
+                                                            {repeatingGroups}
+                                                        </>
+                                                    );
+
+                                                    function renderField(inputField, formIndex, index, repeatIndex = null) {
+                                                        const fieldKey = `${formIndex}-${index}${repeatIndex !== null ? `-${repeatIndex}` : ""}`;
+                                                        const fieldLabel = repeatIndex !== null
+                                                            ? `${inputField.label} ${repeatIndex + 1}`
+                                                            : inputField.label;
+                                                        const valueKey = repeatIndex !== null
+                                                            ? `${inputField.label}_${repeatIndex}`
+                                                            : inputField.label;
+
+                                                        return (
+                                                            <div
+                                                                key={fieldKey}
+                                                                className={inputField.type === "group" ? "col-12 mb-3" : "col-12 col-sm-6 col-md-3 mb-3"}
+                                                            >
+                                                                {inputField.type === "group" ? (
+                                                                    <div>
+                                                                        <p className="fw-bold">{inputField.label}:</p>
+                                                                        <div className="row">
+                                                                            {inputField.fields.map((subField, idx) => {
+                                                                                const subValueKey = repeatIndex !== null
+                                                                                    ? `${subField.label}_${repeatIndex}`
+                                                                                    : subField.label;
+                                                                                return (
+                                                                                    <div key={idx} className="col-12 col-sm-6 col-md-3 mb-2">
+                                                                                        <label>{subField.label}:</label>
+                                                                                        <input
+                                                                                            type={subField.label.toLowerCase().includes("date") ? "date" : "text"}
+                                                                                            className="form-control"
+                                                                                            placeholder={`Enter ${subField.label}`}
+                                                                                            value={
+                                                                                                editMode === caseItem._id
+                                                                                                    ? updatedFields[subValueKey] ?? caseDetails[subValueKey] ?? ""
+                                                                                                    : caseDetails[subValueKey] ?? ""
+                                                                                            }
+                                                                                            disabled={editMode !== caseItem._id}
+                                                                                            onChange={(e) => {
+                                                                                                if (editMode === caseItem._id) {
+                                                                                                    setUpdatedFields((prev) => ({
+                                                                                                        ...prev,
+                                                                                                        [subValueKey]: e.target.value
+                                                                                                    }));
+                                                                                                }
+                                                                                            }}
+                                                                                        />
+                                                                                    </div>
+                                                                                );
+                                                                            })}
+                                                                        </div>
+                                                                    </div>
+                                                                ) : inputField.type === "option" ? (
+                                                                    <div>
+                                                                        <p className="fw-bold">{fieldLabel}:</p>
+                                                                        <select
+                                                                            className="form-select"
+                                                                            disabled={editMode !== caseItem._id}
+                                                                            value={
+                                                                                editMode === caseItem._id
+                                                                                    ? updatedFields[valueKey] ?? caseDetails[valueKey] ?? ""
+                                                                                    : caseDetails[valueKey] ?? ""
+                                                                            }
+                                                                            onChange={(e) => {
+                                                                                if (editMode === caseItem._id) {
+                                                                                    setUpdatedFields((prev) => ({
+                                                                                        ...prev,
+                                                                                        [valueKey]: e.target.value
+                                                                                    }));
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            <option value="">Select</option>
+                                                                            {inputField.fields.map((subField, idx) => (
+                                                                                <option key={idx} value={subField.label}>
+                                                                                    {subField.label}
+                                                                                </option>
+                                                                            ))}
+                                                                        </select>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div>
+                                                                        <p className="fw-bold">{fieldLabel}:</p>
+                                                                        <input
+                                                                            type={inputField.label.toLowerCase().includes("date") ? "date" : "text"}
+                                                                            className="form-control"
+                                                                            placeholder={`Enter ${inputField.label}`}
+                                                                            value={
+                                                                                editMode === caseItem._id
+                                                                                    ? updatedFields[valueKey] ?? caseDetails[valueKey] ?? ""
+                                                                                    : caseDetails[valueKey] ?? ""
+                                                                            }
+                                                                            disabled={editMode !== caseItem._id}
+                                                                            onChange={(e) => {
+                                                                                if (editMode === caseItem._id) {
+                                                                                    setUpdatedFields((prev) => ({
+                                                                                        ...prev,
+                                                                                        [valueKey]: e.target.value
+                                                                                    }));
+                                                                                }
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    }
+                                                })()}
+
+                                            </div>
+
+                                            {/* Action buttons */}
+                                            <div className="mt-3">
+                                                {editMode === caseItem._id ? (
+                                                    <>
                                                         <button
-                                                            className="btn btn-sm btn-secondary me-2"
+                                                            className="btn btn-sm btn-success me-2"
                                                             onClick={async () => {
                                                                 try {
-                                                                    await axios.put(`https://vss-server.vercel.app/transfer-stage/${caseItem._id}`, {
-                                                                        checkClose: false
+                                                                    await axios.put(`https://vss-server.vercel.app/update-case/${caseItem._id}`, {
+                                                                        inputFields: updatedFields,
+                                                                        closed: caseItem.Closed
                                                                     });
-                                                                    alert('Case moved back to previous stage');
+                                                                    alert('Case updated successfully');
+                                                                    setEditMode(null);
+                                                                    setUpdatedFields({});
                                                                     fetchData();
-                                                                } catch (error) {
-                                                                    console.error('Error moving back:', error);
-                                                                    alert('Action failed');
+                                                                } catch (err) {
+                                                                    console.error('Update error:', err);
+                                                                    alert('Failed to update case');
                                                                 }
                                                             }}
                                                         >
-                                                            Move back to previous stage
+                                                            Save
                                                         </button>
-                                                    )}
-                                                    <button className="btn btn-sm btn-danger me-2" onClick={() => closeCase(caseItem._id)} disabled={caseItem.status === 'Closed'} > Close Complete Case </button>
-                                                    {!caseItem.checkClose && (
+
+                                                    </>
+                                                ) :
+                                                    <>
+                                                        {caseItem.checkClose && (
+                                                            <button
+                                                                className="btn btn-sm btn-secondary me-2"
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        await axios.put(`https://vss-server.vercel.app/transfer-stage/${caseItem._id}`, {
+                                                                            checkClose: false
+                                                                        });
+                                                                        alert('Case moved back to previous stage');
+                                                                        fetchData();
+                                                                    } catch (error) {
+                                                                        console.error('Error moving back:', error);
+                                                                        alert('Action failed');
+                                                                    }
+                                                                }}
+                                                            >
+                                                                Move back to previous stage
+                                                            </button>
+                                                        )}
                                                         <button
-                                                            className="btn btn-sm btn-info me-2"
-                                                            onClick={async () => {
-                                                                try {
-                                                                    await axios.put(`https://vss-server.vercel.app/transfer-stage/${caseItem._id}`, {
-                                                                        checkClose: true
-                                                                    });
-                                                                    alert('Case transferred to DAR Action');
-                                                                    fetchData();
-                                                                } catch (error) {
-                                                                    console.error('Error transferring to DAR:', error);
-                                                                    alert('Transfer failed');
-                                                                }
-                                                            }}
+                                                            className="btn btn-sm btn-danger me-2"
+                                                            onClick={() => closeCase(caseItem._id)}
+                                                            disabled={closingCaseId === caseItem._id}
                                                         >
-                                                            Transfer to DAR Action
+                                                            {closingCaseId === caseItem._id ? (
+                                                                <>
+                                                                    <span className="spinner-border spinner-border-sm me-2" role="status" />
+                                                                    Closing...
+                                                                </>
+                                                            ) : (
+                                                                "Close Complete Case"
+                                                            )}
                                                         </button>
-                                                    )}
-                                                </>
-                                            }
+                                                        {!caseItem.checkClose && (
+                                                            <button
+                                                                className="btn btn-sm btn-info me-2"
+                                                                disabled={transferringCaseId === caseItem._id}
+                                                                onClick={async () => {
+                                                                    const confirmTransfer = window.confirm("Are you sure you want to transfer this case to DAR Action?");
+                                                                    if (!confirmTransfer) return;
+
+                                                                    setTransferringCaseId(caseItem._id);
+                                                                    try {
+                                                                        await axios.put(`https://vss-server.vercel.app/transfer-stage/${caseItem._id}`, {
+                                                                            checkClose: true
+                                                                        });
+                                                                        setStatusMessage("Case transferred to DAR Action");
+                                                                        setMessageType("success");
+                                                                        fetchData();
+                                                                    } catch (error) {
+                                                                        console.error('Error transferring to DAR:', error);
+                                                                        setStatusMessage("Transfer failed");
+                                                                        setMessageType("danger");
+                                                                    } finally {
+                                                                        setTransferringCaseId(null);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                {transferringCaseId === caseItem._id ? (
+                                                                    <>
+                                                                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                                                        Transferring...
+                                                                    </>
+                                                                ) : (
+                                                                    'Transfer to DAR Action'
+                                                                )}
+                                                            </button>
+
+                                                        )}
+                                                    </>
+                                                }
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })
-                ) : (
-                    <p>No cases available.</p>
-                )}
+                            );
+                        })
+                    ) : (
+                        <div className="alert alert-warning text-center" role="alert">
+                            No cases available.
+                        </div>
+                    )}
             </div>
-
 
             <div style={{
                 position: 'absolute',
@@ -983,6 +1039,12 @@ export default function InProgress() {
             >
                 <ReportToPrint ref={componentRef} selectedCaseData={selectedCaseData} fieldsToPrint={fieldsToPrint} viewMode={viewMode} />
             </div>
+            {statusMessage && (
+                <div className={`toast-message alert alert-${messageType} alert-dismissible fade show`} role="alert">
+                    {statusMessage}
+                    <button type="button" className="btn-close" onClick={() => setStatusMessage("")}></button>
+                </div>
+            )}
         </div>
     );
 }

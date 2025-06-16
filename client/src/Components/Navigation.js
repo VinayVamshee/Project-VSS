@@ -49,9 +49,8 @@ export default function Navigation() {
 
   const handleUserRegister = async () => {
     try {
-      const res = await axios.post('https://vss-server.vercel.app/user', userRegisterData);
+      await axios.post('https://vss-server.vercel.app/user', userRegisterData);
       alert('User registered successfully');
-      console.log(res.data);
     } catch (err) {
       alert('Registration failed');
     }
@@ -73,9 +72,8 @@ export default function Navigation() {
 
   const handleAdminRegister = async () => {
     try {
-      const res = await axios.post('https://vss-server.vercel.app/admin', adminRegisterData);
+      await axios.post('https://vss-server.vercel.app/admin', adminRegisterData);
       alert('Admin registered successfully');
-      console.log(res.data);
     } catch (err) {
       alert('Admin registration failed');
     }
@@ -230,9 +228,7 @@ export default function Navigation() {
                 onChange={e => setUserRegisterData({ ...userRegisterData, role: e.target.value })}
               >
                 <option value="">Select Role</option>
-                <option value="Preventive Check">Preventive Check</option>
-                <option value="Decoy Check">Decoy Check</option>
-                <option value="Complaint">Complaint</option>
+                <option value="Preventive Check Decoy Check Complaint">Preventive Check | Decoy Check | Complaint</option>
                 <option value="DAR Action">DAR Action</option>
               </select>
 
@@ -277,41 +273,41 @@ export default function Navigation() {
       </div>
 
       {/* Theme Selector */}
-     <select value={theme} onChange={(e) => setTheme(e.target.value)} className='btn'>
-   <option value="white">☀️ Light</option>
-  <option value="black">🌑 Dark</option>
-  <option value="red">🩸 Blood</option>
-  <option value="blue">🌊 Ocean</option>
-  <option value="pink">🌸 Rose Blush</option>
-  <option value="yellow">🌞 Sunbeam</option>
-  <option value="brown">🍂 Earthy</option>
-  <option value="green">🌿 Forest</option>
-  <option value="purple">💜 Lavender</option>
-  <option value="orange">🍊 Sunset</option>
-  <option value="grey">🌫️ Fog</option>
-  <option value="aqua">🐬 Aqua Breeze</option>
-  <option value="cool-silver">🧊 Cool Silver</option>
-  <option value="mint">🍀 Mint</option>
+      <select value={theme} onChange={(e) => setTheme(e.target.value)} className='btn'>
+        <option value="white">☀️ Light</option>
+        <option value="black">🌑 Dark</option>
+        <option value="red">🩸 Blood</option>
+        <option value="blue">🌊 Ocean</option>
+        <option value="pink">🌸 Rose Blush</option>
+        <option value="yellow">🌞 Sunbeam</option>
+        <option value="brown">🍂 Earthy</option>
+        <option value="green">🌿 Forest</option>
+        <option value="purple">💜 Lavender</option>
+        <option value="orange">🍊 Sunset</option>
+        <option value="grey">🌫️ Fog</option>
+        <option value="aqua">🐬 Aqua Breeze</option>
+        <option value="cool-silver">🧊 Cool Silver</option>
+        <option value="mint">🍀 Mint</option>
 
-  {/* Earth Themes */}
-  <option value="earth-tones">🌰 Earth Tones</option>
-  <option value="mountain-stone">🪨 Mountain Stone</option>
-  <option value="sand-dune">🏜️ Sand Dune</option>
-  <option value="forest-floor">🍃 Forest Floor</option>
-  <option value="forest">🌲 Deep Forest</option>
+        {/* Earth Themes */}
+        <option value="earth-tones">🌰 Earth Tones</option>
+        <option value="mountain-stone">🪨 Mountain Stone</option>
+        <option value="sand-dune">🏜️ Sand Dune</option>
+        <option value="forest-floor">🍃 Forest Floor</option>
+        <option value="forest">🌲 Deep Forest</option>
 
-  {/* Space / Galaxy Themes */}
-  <option value="indigo-night">🫐 Indigo Night</option>
-  <option value="galaxy">🌌 Galaxy</option>
-  <option value="nebula-dream">💫 Nebula Dream</option>
-  <option value="cosmic-horizon">🌠 Cosmic Horizon</option>
-  <option value="stellar-sunset">🌇 Stellar Sunset</option>
-  <option value="aurora-borealis">🌈 Aurora Borealis</option>
-  <option value="supernova">💥 Supernova Burst</option>
-<option value="cosmic-neon">🌌 Cosmic Neon</option>
-<option value="stellar-candy">🍬 Stellar Candy</option>
+        {/* Space / Galaxy Themes */}
+        <option value="indigo-night">🫐 Indigo Night</option>
+        <option value="galaxy">🌌 Galaxy</option>
+        <option value="nebula-dream">💫 Nebula Dream</option>
+        <option value="cosmic-horizon">🌠 Cosmic Horizon</option>
+        <option value="stellar-sunset">🌇 Stellar Sunset</option>
+        <option value="aurora-borealis">🌈 Aurora Borealis</option>
+        <option value="supernova">💥 Supernova Burst</option>
+        <option value="cosmic-neon">🌌 Cosmic Neon</option>
+        <option value="stellar-candy">🍬 Stellar Candy</option>
 
-</select>
+      </select>
 
     </div>
   );
