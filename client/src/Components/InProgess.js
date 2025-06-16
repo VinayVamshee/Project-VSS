@@ -153,32 +153,49 @@ export default function InProgress() {
     const [selectAll, setSelectAll] = useState(false);
 
     const handleDownloadExcel = () => {
-        const selectedCaseData = CaseData.filter(caseItem => selectedCases.includes(caseItem._id));
+    const selectedCaseData = CaseData.filter(caseItem => selectedCases.includes(caseItem._id));
 
-        const formattedData = selectedCaseData.map(caseItem => {
-            const flatCase = {
-                _id: caseItem._id,
-                Closed: caseItem.Closed,
-                checkClose: caseItem.checkClose,
-            };
+    const formattedData = selectedCaseData.map(caseItem => {
+        const flatCase = {
+            _id: caseItem._id,
+            Closed: caseItem.Closed,
+            checkClose: caseItem.checkClose,
+        };
 
-            // Flatten inputFields
-            if (caseItem.inputFields) {
-                Object.entries(caseItem.inputFields).forEach(([key, value]) => {
-                    flatCase[key] = value;
-                });
+        if (caseItem.inputFields) {
+            Object.entries(caseItem.inputFields).forEach(([key, value]) => {
+                flatCase[key] = value;
+            });
+        }
+
+        return flatCase;
+    });
+
+    const ws = XLSX.utils.json_to_sheet(formattedData);
+
+    // Insert a blank row AFTER headers (i.e., between row 1 and 2)
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let R = range.e.r; R >= 1; --R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
+            if (cell) {
+                ws[XLSX.utils.encode_cell({ r: R + 1, c: C })] = { ...cell };
+                delete ws[XLSX.utils.encode_cell({ r: R, c: C })];
             }
+        }
+    }
 
-            return flatCase;
-        });
+    // Expand the range to reflect the shifted data
+    range.e.r += 1;
+    ws['!ref'] = XLSX.utils.encode_range(range);
 
-        const ws = XLSX.utils.json_to_sheet(formattedData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Cases");
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Cases");
 
-        const today = new Date().toISOString().split("T")[0];
-        XLSX.writeFile(wb, `Reports - ${today}.xlsx`);
-    };
+    const today = new Date().toISOString().split("T")[0];
+    XLSX.writeFile(wb, `Reports - ${today}.xlsx`);
+};
+
 
     const componentRef = useRef(null);
     const getMatchingFieldKeys = (selectedLabels, inputFields) => {

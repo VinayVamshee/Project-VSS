@@ -158,7 +158,6 @@ export default function ClosedCases() {
                 checkClose: caseItem.checkClose,
             };
 
-            // Flatten inputFields
             if (caseItem.inputFields) {
                 Object.entries(caseItem.inputFields).forEach(([key, value]) => {
                     flatCase[key] = value;
@@ -169,6 +168,23 @@ export default function ClosedCases() {
         });
 
         const ws = XLSX.utils.json_to_sheet(formattedData);
+
+        // Insert a blank row AFTER headers (i.e., between row 1 and 2)
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for (let R = range.e.r; R >= 1; --R) {
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
+                if (cell) {
+                    ws[XLSX.utils.encode_cell({ r: R + 1, c: C })] = { ...cell };
+                    delete ws[XLSX.utils.encode_cell({ r: R, c: C })];
+                }
+            }
+        }
+
+        // Expand the range to reflect the shifted data
+        range.e.r += 1;
+        ws['!ref'] = XLSX.utils.encode_range(range);
+
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Cases");
 
@@ -176,30 +192,30 @@ export default function ClosedCases() {
         XLSX.writeFile(wb, `Reports - ${today}.xlsx`);
     };
 
-     const componentRef = useRef(null);
-        const getMatchingFieldKeys = (selectedLabels, inputFields) => {
-            return Object.keys(inputFields).filter((fieldKey) =>
-                selectedLabels.some((label) =>
-                    fieldKey === label || fieldKey.startsWith(`${label}_`)
-                )
-            );
-        };
-        const selectedCaseData = CaseData.filter(caseItem => selectedCases.includes(caseItem._id));
-        const [selectedFields, setSelectedFields] = useState([]);
-        const [allFieldLabels, setAllFieldLabels] = useState([]);
-        const [fieldsToPrint, setFieldsToPrint] = useState([]);
-    
-        const prepareFieldsToPrint = () => {
-            const mergedKeys = new Set();
-    
-            selectedCaseData.forEach((caseItem) => {
-                const inputFields = caseItem.inputFields || {};
-                const matchedKeys = getMatchingFieldKeys(selectedFields, inputFields);
-                matchedKeys.forEach((key) => mergedKeys.add(key));
-            });
-    
-            setFieldsToPrint([...mergedKeys]);
-        };
+    const componentRef = useRef(null);
+    const getMatchingFieldKeys = (selectedLabels, inputFields) => {
+        return Object.keys(inputFields).filter((fieldKey) =>
+            selectedLabels.some((label) =>
+                fieldKey === label || fieldKey.startsWith(`${label}_`)
+            )
+        );
+    };
+    const selectedCaseData = CaseData.filter(caseItem => selectedCases.includes(caseItem._id));
+    const [selectedFields, setSelectedFields] = useState([]);
+    const [allFieldLabels, setAllFieldLabels] = useState([]);
+    const [fieldsToPrint, setFieldsToPrint] = useState([]);
+
+    const prepareFieldsToPrint = () => {
+        const mergedKeys = new Set();
+
+        selectedCaseData.forEach((caseItem) => {
+            const inputFields = caseItem.inputFields || {};
+            const matchedKeys = getMatchingFieldKeys(selectedFields, inputFields);
+            matchedKeys.forEach((key) => mergedKeys.add(key));
+        });
+
+        setFieldsToPrint([...mergedKeys]);
+    };
 
     useEffect(() => {
         const labelSet = new Set();
@@ -837,7 +853,7 @@ export default function ClosedCases() {
                 left: '-9999px',
                 width: '1000px',
             }}>
-                 <ReportToPrint ref={componentRef} selectedCaseData={selectedCaseData} fieldsToPrint={fieldsToPrint} viewMode={viewMode} />
+                <ReportToPrint ref={componentRef} selectedCaseData={selectedCaseData} fieldsToPrint={fieldsToPrint} viewMode={viewMode} />
             </div>
         </div>
     );
