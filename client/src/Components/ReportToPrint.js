@@ -6,9 +6,12 @@ const ReportToPrint = forwardRef(({ selectedCaseData, fieldsToPrint, viewMode },
     }
 
     return (
-        <div ref={ref} className="p-4">
-            <h2 className="mb-1 text-center">South East Central Railway</h2>
-            <h3 className='mb-4 text-center'>Vigilance Branch</h3>
+        <div ref={ref} className="p-3" style={{ background: 'white' }}>
+            {/* Heading and content together to avoid page break */}
+            <div className="text-center mb-3 pb-2 border-bottom">
+                <h2 className="mb-1" style={{ fontSize: "20px" }}>South East Central Railway</h2>
+                <h3 className="mb-0" style={{ fontSize: "16px" }}>Vigilance Branch</h3>
+            </div>
 
             {viewMode === "table" ? (
                 <div className="table-responsive">
@@ -38,48 +41,37 @@ const ReportToPrint = forwardRef(({ selectedCaseData, fieldsToPrint, viewMode },
                 </div>
             ) : (
                 <div className="w-100">
-                    <div className="row g-4">
+                    <div className="row gx-3 gy-4">
                         {selectedCaseData.map((caseItem, index) => {
                             const fields = caseItem.inputFields || {};
-                            const half = Math.ceil(fieldsToPrint.length / 2);
-                            const leftFields = fieldsToPrint.slice(0, half);
-                            const rightFields = fieldsToPrint.slice(half);
+
+                            // Group fields into pairs for horizontal layout
+                            const fieldPairs = [];
+                            for (let i = 0; i < fieldsToPrint.length; i += 2) {
+                                fieldPairs.push(fieldsToPrint.slice(i, i + 2));
+                            }
 
                             return (
-                                <div
-                                    key={caseItem._id || index}
-                                    className="col-12"
-                                >
-                                    <div className="border border-dark-subtle rounded p-4 shadow-sm page-break">
-                                        <h5 className="mb-4  pb-2">Case {index + 1}</h5>
-                                        <div className="row">
-                                            {/* Left Column */}
-                                            <div className="col-6">
-                                                <dl className="row">
-                                                    {leftFields.map((field, idx) => (
+                                <div key={caseItem._id || index} className="col-12 case-container">
+                                    <div className="border rounded p-4 shadow-sm bg-white">
+                                        <div className="mb-3 pb-2 border-bottom">
+                                            <h5 className="mb-0 fw-bold text-primary">Case {index + 1}</h5>
+                                        </div>
+                                        <div className="container-fluid px-0">
+                                            {fieldPairs.map((pair, pairIndex) => (
+                                                <div className="row align-items-start mb-2" key={pairIndex}>
+                                                    {pair.map((field, idx) => (
                                                         <React.Fragment key={idx}>
-                                                            <dt className="col-5 fw-semibold  py-1">{field}</dt>
-                                                            <dd className="col-7  py-1">
+                                                            <div className="col-3 fw-semibold text-muted small text-uppercase">
+                                                                {field}
+                                                            </div>
+                                                            <div className="col-3 text-dark small">
                                                                 {fields[field] !== undefined ? String(fields[field]) : '—'}
-                                                            </dd>
+                                                            </div>
                                                         </React.Fragment>
                                                     ))}
-                                                </dl>
-                                            </div>
-
-                                            {/* Right Column */}
-                                            <div className="col-6">
-                                                <dl className="row">
-                                                    {rightFields.map((field, idx) => (
-                                                        <React.Fragment key={idx}>
-                                                            <dt className="col-5 fw-semibold  py-1">{field}</dt>
-                                                            <dd className="col-7  py-1">
-                                                                {fields[field] !== undefined ? String(fields[field]) : '—'}
-                                                            </dd>
-                                                        </React.Fragment>
-                                                    ))}
-                                                </dl>
-                                            </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 </div>

@@ -1170,20 +1170,33 @@ button {
     print-color-adjust: exact;
   }
 
+  h2, h3 {
+    margin-top: 0;
+    margin-bottom: 4px;
+  }
+
   .page-break {
-    page-break-inside: avoid;
     break-inside: avoid;
+    page-break-inside: avoid;
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .case-container {
+    margin-bottom: 10px;
+    padding: 10px;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .row {
     margin: 0 !important;
   }
 
-  .col-6, .col-5, .col-7 {
+  .col-3, .col-6 {
     padding: 0 6px !important;
   }
 }
-
 
 .toast-message {
   position: fixed;

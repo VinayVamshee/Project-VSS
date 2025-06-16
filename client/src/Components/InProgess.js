@@ -213,13 +213,13 @@ export default function InProgress() {
     };
 
     const componentRef = useRef(null);
-    const getMatchingFieldKeys = (selectedLabels, inputFields) => {
-        return Object.keys(inputFields).filter((fieldKey) =>
-            selectedLabels.some((label) =>
-                fieldKey === label || fieldKey.startsWith(`${label}_`)
-            )
-        );
-    };
+    // const getMatchingFieldKeys = (selectedLabels, inputFields) => {
+    //     return Object.keys(inputFields).filter((fieldKey) =>
+    //         selectedLabels.some((label) =>
+    //             fieldKey === label || fieldKey.startsWith(`${label}_`)
+    //         )
+    //     );
+    // };
     const selectedCaseData = CaseData.filter(caseItem => selectedCases.includes(caseItem._id));
     const [selectedFields, setSelectedFields] = useState([]);
     const [allFieldLabels, setAllFieldLabels] = useState([]);
@@ -228,15 +228,28 @@ export default function InProgress() {
     const prepareFieldsToPrint = () => {
         const mergedKeys = new Set();
 
-        selectedCaseData.forEach((caseItem) => {
-            const inputFields = caseItem.inputFields || {};
-            const matchedKeys = getMatchingFieldKeys(selectedFields, inputFields);
-            matchedKeys.forEach((key) => mergedKeys.add(key));
+        selectedFields.forEach((label) => {
+            let foundMatch = false;
+
+            selectedCaseData.forEach((caseItem) => {
+                const inputFields = caseItem.inputFields || {};
+
+                Object.keys(inputFields).forEach((key) => {
+                    if (key === label || key.startsWith(`${label}_`)) {
+                        mergedKeys.add(key);
+                        foundMatch = true;
+                    }
+                });
+            });
+
+            if (!foundMatch) {
+                // Even if no matching key was found in any case, add the base label
+                mergedKeys.add(label);
+            }
         });
 
         setFieldsToPrint([...mergedKeys]);
     };
-
 
     useEffect(() => {
         const labelSet = new Set();
