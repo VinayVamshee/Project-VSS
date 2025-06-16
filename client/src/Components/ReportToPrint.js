@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 
-const ReportToPrint = forwardRef(({ selectedCaseData, selectedFields, viewMode }, ref) => {
+const ReportToPrint = forwardRef(({ selectedCaseData, fieldsToPrint, viewMode }, ref) => {
     if (!selectedCaseData || selectedCaseData.length === 0) {
         return <div ref={ref}><h2>No Data Selected</h2></div>;
     }
@@ -16,7 +16,7 @@ const ReportToPrint = forwardRef(({ selectedCaseData, selectedFields, viewMode }
                         <thead className="text-center align-middle">
                             <tr>
                                 <th>S.No.</th>
-                                {selectedFields.map((label, idx) => (
+                                {fieldsToPrint.map((label, idx) => (
                                     <th key={idx}>{label}</th>
                                 ))}
                             </tr>
@@ -27,7 +27,7 @@ const ReportToPrint = forwardRef(({ selectedCaseData, selectedFields, viewMode }
                                 return (
                                     <tr key={caseItem._id || index}>
                                         <td>{index + 1}</td>
-                                        {selectedFields.map((label, idx) => (
+                                        {fieldsToPrint.map((label, idx) => (
                                             <td key={idx}>{fields[label] !== undefined ? String(fields[label]) : '—'}</td>
                                         ))}
                                     </tr>
@@ -41,9 +41,9 @@ const ReportToPrint = forwardRef(({ selectedCaseData, selectedFields, viewMode }
                     <div className="row g-4">
                         {selectedCaseData.map((caseItem, index) => {
                             const fields = caseItem.inputFields || {};
-                            const half = Math.ceil(selectedFields.length / 2);
-                            const leftFields = selectedFields.slice(0, half);
-                            const rightFields = selectedFields.slice(half);
+                            const half = Math.ceil(fieldsToPrint.length / 2);
+                            const leftFields = fieldsToPrint.slice(0, half);
+                            const rightFields = fieldsToPrint.slice(half);
 
                             return (
                                 <div

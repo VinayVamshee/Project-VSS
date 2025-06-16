@@ -176,10 +176,30 @@ export default function ClosedCases() {
         XLSX.writeFile(wb, `Reports - ${today}.xlsx`);
     };
 
-    const componentRef = useRef(null);
-    const selectedCaseData = CaseData.filter(caseItem => selectedCases.includes(caseItem._id));
-    const [selectedFields, setSelectedFields] = useState([]);
-    const [allFieldLabels, setAllFieldLabels] = useState([]);
+     const componentRef = useRef(null);
+        const getMatchingFieldKeys = (selectedLabels, inputFields) => {
+            return Object.keys(inputFields).filter((fieldKey) =>
+                selectedLabels.some((label) =>
+                    fieldKey === label || fieldKey.startsWith(`${label}_`)
+                )
+            );
+        };
+        const selectedCaseData = CaseData.filter(caseItem => selectedCases.includes(caseItem._id));
+        const [selectedFields, setSelectedFields] = useState([]);
+        const [allFieldLabels, setAllFieldLabels] = useState([]);
+        const [fieldsToPrint, setFieldsToPrint] = useState([]);
+    
+        const prepareFieldsToPrint = () => {
+            const mergedKeys = new Set();
+    
+            selectedCaseData.forEach((caseItem) => {
+                const inputFields = caseItem.inputFields || {};
+                const matchedKeys = getMatchingFieldKeys(selectedFields, inputFields);
+                matchedKeys.forEach((key) => mergedKeys.add(key));
+            });
+    
+            setFieldsToPrint([...mergedKeys]);
+        };
 
     useEffect(() => {
         const labelSet = new Set();
@@ -577,7 +597,10 @@ export default function ClosedCases() {
                                     type="button"
                                     className="btn btn-primary"
                                     data-bs-dismiss="modal"
-                                    onClick={() => handlePrint(viewMode)}
+                                    onClick={() => {
+                                        prepareFieldsToPrint();  // Sets correct keys
+                                        setTimeout(() => handlePrint(), 100); // Give it time to re-render
+                                    }}
                                 >
                                     <i className="bi bi-printer me-1"></i> Print Selected
                                 </button>
@@ -814,7 +837,7 @@ export default function ClosedCases() {
                 left: '-9999px',
                 width: '1000px',
             }}>
-                <ReportToPrint ref={componentRef} selectedCaseData={selectedCaseData} selectedFields={selectedFields} viewMode={viewMode} />
+                 <ReportToPrint ref={componentRef} selectedCaseData={selectedCaseData} fieldsToPrint={fieldsToPrint} viewMode={viewMode} />
             </div>
         </div>
     );
