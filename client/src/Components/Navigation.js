@@ -171,7 +171,7 @@ export default function Navigation() {
           :
           null
       }
-      <div className="modal fade" id="loginHistoryModal" tabIndex="-1" aria-labelledby="loginHistoryModalLabel" aria-hidden="true" data-bs-backdrop="static">
+      <div className="modal fade" id="loginHistoryModal" tabIndex="-1" aria-labelledby="loginHistoryModalLabel" aria-hidden="true" data-bs-backdrop="false">
         <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
           <div className="modal-content border-0 shadow-lg">
             <div className="modal-header ">
