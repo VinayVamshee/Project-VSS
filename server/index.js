@@ -264,6 +264,15 @@ app.delete('/user/:id', async (req, res) => {
     }
 });
 
+app.get('/user', async (req, res) => {
+    try {
+        const users = await User.find();
+        res.status(200).send(users);
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to fetch users' });
+    }
+});
+
 // --- Admin Routes --- //
 app.post('/admin', async (req, res) => {
     try {
@@ -339,8 +348,8 @@ app.post('/admin/login', async (req, res) => {
 });
 
 app.get('/admin/login-history', async (req, res) => {
-  const history = await LoginHistory.find().sort({ loginTime: -1 });
-  res.send(history);
+    const history = await LoginHistory.find().sort({ loginTime: -1 });
+    res.send(history);
 });
 
 

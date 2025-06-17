@@ -944,9 +944,9 @@
 }
 
 .repeatIndex {
-    background-color: var(--case-info-bg);
-    padding: 5px;
-    text-align: center;
+  background-color: var(--case-info-bg);
+  padding: 5px;
+  text-align: center;
 }
 
 /* Collapse animation */
@@ -1170,7 +1170,8 @@ button {
     print-color-adjust: exact;
   }
 
-  h2, h3 {
+  h2,
+  h3 {
     margin-top: 0;
     margin-bottom: 4px;
   }
@@ -1193,7 +1194,8 @@ button {
     margin: 0 !important;
   }
 
-  .col-3, .col-6 {
+  .col-3,
+  .col-6 {
     padding: 0 6px !important;
   }
 }
@@ -1204,4 +1206,88 @@ button {
   right: 20px;
   z-index: 9999;
   min-width: 250px;
+}
+
+.Settings {
+  display: flex;
+  width: 100%;
+  min-height: 93vh;
+  margin-top: 6px;
+}
+
+.Admin-Options {
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 10px;
+  background-color: var(--navigation-color);
+  transition: all 0.3s ease;
+}
+
+.Admin-Options.expanded {
+  width: 200px;
+}
+
+.Admin-Options.collapsed {
+  width: 60px;
+}
+
+.Admin-Options .btn {
+  background-color: var(--btn-bg);
+  color: var(--text-color);
+  text-align: left;
+  transition: 0.3s ease-in-out;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.Admin-Options .toggle-btn {
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+
+.Admin-Options .btn:hover {
+  background-color: var(--btn-hover-bg);
+  cursor: pointer;
+}
+
+.render-component {
+  background-color: var(--bg-color);
+  flex: 1;
+  overflow: scroll;
+  height: 93vh;
+}
+
+/* .btn {
+  background-color: var(--btn-bg);
+  color: var(--text-color);
+  border-radius: 10px;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transition: background-color 0.4s ease;
+} */
+
+.Users-Information {
+  background-color: var(--case-info-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user {
+  background-color: var(--case-overview-bg);
+  padding: 10px;
+  width: 100%;
+  border-radius: 10px;
+  color: var(--text-color);
+}
+
+.show-btn {
+  border: none;
+  background-color: transparent;
 }
