@@ -10,6 +10,7 @@ const Case = require('./Models/Case');
 const connectDB = require('./connectDB');
 const User = require('./Models/User');
 const Admin = require('./Models/Admin');
+const LoginHistory = require('./Models/LoginHistory')
 
 
 const app = express();
@@ -296,31 +297,51 @@ app.delete('/admin/:id', async (req, res) => {
 // --- User Login --- //
 app.post('/user/login', async (req, res) => {
     const { username, password } = req.body;
-
     const user = await User.findOne({ username, password });
+
     if (!user) return res.status(401).send({ message: 'Invalid credentials' });
 
-    // FIX: Make sure this field is exactly correct
-    const token = jwt.sign(
-        { id: user._id, role: user.role, username: user.username },
-        secret
-    );
+    const token = jwt.sign({ id: user._id, role: user.role, username }, secret);
+
+    // Save login history
+    await LoginHistory.create({
+        userType: 'user',
+        userId: user._id,
+        username: user.username,
+        loginTime: new Date(),
+        ipAddress: req.headers['x-forwarded-for'] || req.ip,
+        userAgent: req.headers['user-agent']
+    });
 
     res.send({ token, role: user.role });
 });
 
-
 // --- Admin Login --- //
 app.post('/admin/login', async (req, res) => {
     const { username, password } = req.body;
-
     const admin = await Admin.findOne({ username, password });
+
     if (!admin) return res.status(401).send({ message: 'Invalid credentials' });
 
     const token = jwt.sign({ id: admin._id, role: 'admin' }, secret);
+
+    // Save login history
+    await LoginHistory.create({
+        userType: 'admin',
+        userId: admin._id,
+        username: admin.username,
+        loginTime: new Date(),
+        ipAddress: req.headers['x-forwarded-for'] || req.ip,
+        userAgent: req.headers['user-agent']
+    });
+
     res.send({ token, admin });
 });
 
+app.get('/admin/login-history', async (req, res) => {
+  const history = await LoginHistory.find().sort({ loginTime: -1 });
+  res.send(history);
+});
 
 
 

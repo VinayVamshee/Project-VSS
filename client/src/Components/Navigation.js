@@ -81,6 +81,52 @@ export default function Navigation() {
 
   const [showChooseLoginModal, setShowChooseLoginModal] = useState(false);
 
+  const [history, setHistory] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [search, setSearch] = useState('');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
+  useEffect(() => {
+    axios.get('https://vss-server.vercel.app/admin/login-history')
+      .then(res => {
+        setHistory(res.data);
+        setFiltered(res.data);
+      })
+      .catch(err => console.error('Failed to fetch login history', err));
+  }, []);
+
+  useEffect(() => {
+    let data = [...history];
+
+    // Filter by name
+    if (search.trim()) {
+      data = data.filter(log =>
+        log.username.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    // Filter by date
+    if (dateFrom) {
+      const from = new Date(dateFrom);
+      data = data.filter(log => new Date(log.loginTime) >= from);
+    }
+
+    if (dateTo) {
+      const to = new Date(dateTo);
+      data = data.filter(log => new Date(log.loginTime) <= to);
+    }
+
+    // Sort
+    data.sort((a, b) => {
+      const dateA = new Date(a.loginTime);
+      const dateB = new Date(b.loginTime);
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+
+    setFiltered(data);
+  }, [search, sortOrder, dateFrom, dateTo, history]);
 
   return (
     <div className='Navigation'>
@@ -102,6 +148,110 @@ export default function Navigation() {
           <Link className={`btn ${isActive('/Settings')}`} to='/Settings'> <i className="fa-solid fa-gear fa-lg me-1"></i> Settings </Link>
           : null
       }
+      {
+        IsAdminLoggedIn ?
+          <div className="dropdown">
+            <button className="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i className="fa-solid fa-id-card fa-lg me-2"></i>Register
+            </button>
+            <ul className="dropdown-menu">
+              <li><button className="dropdown-item" data-bs-toggle="modal" data-bs-target="#UserRegisterModal">User Register</button></li>
+              <li><button className="dropdown-item" data-bs-toggle="modal" data-bs-target="#AdminRegisterModal">Admin Register</button></li>
+
+            </ul>
+          </div>
+          :
+          null
+      }
+      {
+        IsAdminLoggedIn ?
+          <button className="btn" data-bs-toggle="modal" data-bs-target="#loginHistoryModal">
+            <i class="fa-solid fa-clock-rotate-left fa-lg me-2"></i>View Login History
+          </button>
+          :
+          null
+      }
+      <div className="modal fade" id="loginHistoryModal" tabIndex="-1" aria-labelledby="loginHistoryModalLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+          <div className="modal-content border-0 shadow-lg">
+            <div className="modal-header ">
+              <h5 className="modal-title" id="loginHistoryModalLabel">🕒 Login History</h5>
+              <button type="button" className="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" />
+            </div>
+
+            <div className="modal-body">
+              {/* All Filters in One Row */}
+              <div className="row g-2 mb-3 align-items-end">
+                <div className="col-md-4">
+                  <label className="form-label mb-1 fw-semibold">Search by Name</label>
+                  <div className="input-group">
+                    <span className="input-group-text"><i className="bi bi-search" /></span>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Enter username"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-3">
+                  <label className="form-label mb-1 fw-semibold">From</label>
+                  <input type="datetime-local" className="form-control" value={dateFrom}
+                    onChange={e => setDateFrom(e.target.value)} />
+                </div>
+                <div className="col-md-3">
+                  <label className="form-label mb-1 fw-semibold">To</label>
+                  <input type="datetime-local" className="form-control" value={dateTo}
+                    onChange={e => setDateTo(e.target.value)} />
+                </div>
+                <div className="col-md-2">
+                  <label className="form-label mb-1 fw-semibold">Sort</label>
+                  <select className="form-select" value={sortOrder}
+                    onChange={e => setSortOrder(e.target.value)}>
+                    <option value="desc">Newest First</option>
+                    <option value="asc">Oldest First</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="table-responsive rounded border">
+                <table className="table table-striped table-hover align-middle mb-0">
+                  <thead className="table-light">
+                    <tr>
+                      <th>User Type</th>
+                      <th>Username</th>
+                      <th>Login Time</th>
+                      <th>IP Address</th>
+                      <th>User Agent</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.length > 0 ? filtered.map((log, i) => (
+                      <tr key={i}>
+                        <td>{log.userType}</td>
+                        <td>{log.username}</td>
+                        <td>{new Date(log.loginTime).toLocaleString()}</td>
+                        <td>{log.ipAddress}</td>
+                        <td style={{ maxWidth: '300px', wordWrap: 'break-word' }}>{log.userAgent}</td>
+                      </tr>
+                    )) : (
+                      <tr>
+                        <td colSpan="5" className="text-center text-muted py-3">No records found.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="modal-footer bg-light">
+              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {IsUserLoggedIn ? (
         <button
@@ -134,22 +284,6 @@ export default function Navigation() {
           <i className="fa-solid fa-user fa-lg me-2"></i>Login
         </button>
       )}
-
-      {
-        IsAdminLoggedIn ?
-          <div className="dropdown">
-            <button className="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i className="fa-solid fa-id-card fa-lg me-2"></i>Register
-            </button>
-            <ul className="dropdown-menu">
-              <li><button className="dropdown-item" data-bs-toggle="modal" data-bs-target="#UserRegisterModal">User Register</button></li>
-              <li><button className="dropdown-item" data-bs-toggle="modal" data-bs-target="#AdminRegisterModal">Admin Register</button></li>
-
-            </ul>
-          </div>
-          :
-          null
-      }
 
       {showChooseLoginModal && (
         <div
