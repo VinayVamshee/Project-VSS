@@ -81,60 +81,71 @@ export default function Navigation() {
 
   const [showChooseLoginModal, setShowChooseLoginModal] = useState(false);
 
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className='Navigation'>
-      <Link className={`btn ${isActive('/')}`} to='/'> <i className="fa-solid fa-house fa-lg me-1"></i> Home </Link>
-      {
-        (IsUserLoggedIn || IsAdminLoggedIn) ?
-          (
-            <>
-              <Link className={`btn ${isActive('/new-case')}`} to='/new-case'> <i className="fa-solid fa-square-plus fa-lg me-2"></i>Register Case </Link>
-              <Link className={`btn ${isActive('/inProgress')}`} to='/inProgress'> <i className="fa-solid fa-circle-dot fa-lg me-1" style={{ color: '#ffc800' }}></i>In Progress </Link>
-              <Link className={`btn ${isActive('/closedCases')}`} to='/closedCases'> <i className="fa-solid fa-circle-dot fa-lg me-1" style={{ color: 'red' }}></i>Closed Cases </Link>
-            </>
-          )
-          :
-          null
-      }
-      {
-        IsAdminLoggedIn ?
-          <Link className={`btn ${isActive('/settings')}`} to='/settings'> <i className="fa-solid fa-gear fa-lg me-1"></i> Settings </Link>
-          : null
-      }
+    <div className={`Navigation d-flex flex-column ${isCollapsed ? 'collapsed' : ''}`}>
 
-      {IsUserLoggedIn ? (
-        <button
-          className="btn"
-          onClick={() => {
-            localStorage.removeItem('userToken');
-            setIsUserLoggedIn(false);
-            localStorage.removeItem('userRole');
-            window.location.reload();
-          }}
-        >
-          User Logout<i className="fa-solid fa-right-from-bracket fa-lg ms-2"></i>
-        </button>
-      ) : IsAdminLoggedIn ? (
-        <button
-          className="btn me-2"
-          onClick={() => {
-            localStorage.removeItem('adminToken');
-            setIsAdminLoggedIn(false);
-            window.location.reload();
-          }}
-        >
-          Admin Logout<i className="fa-solid fa-right-from-bracket fa-lg ms-2"></i>
-        </button>
-      ) : (
-        <button
-          className="btn"
-          onClick={() => setShowChooseLoginModal(true)}
-        >
-          <i className="fa-solid fa-user fa-lg me-2"></i>Login
-        </button>
+      <button
+        className="btn btn-sm btn-secondary "
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
+        <i className={`fa-solid ${isCollapsed ? 'fa-angles-right' : 'fa-angles-left'}`}></i>
+      </button>
+      <Link className={`btn ${isActive('/')}`} to='/'>
+        <i className="fa-solid fa-house fa-lg "></i>
+        {!isCollapsed && 'Home'}
+      </Link>
+
+      {(IsUserLoggedIn || IsAdminLoggedIn) && (
+        <>
+          <Link className={`btn ${isActive('/new-case')}`} to='/new-case'>
+            <i className="fa-solid fa-square-plus fa-lg "></i>
+            {!isCollapsed && 'Register Case'}
+          </Link>
+          <Link className={`btn ${isActive('/inProgress')}`} to='/inProgress'>
+            <i className="fa-solid fa-circle-dot fa-lg " style={{ color: '#ffc800' }}></i>
+            {!isCollapsed && 'In Progress'}
+          </Link>
+          <Link className={`btn ${isActive('/closedCases')}`} to='/closedCases'>
+            <i className="fa-solid fa-circle-dot fa-lg " style={{ color: 'red' }}></i>
+            {!isCollapsed && 'Closed Cases'}
+          </Link>
+        </>
       )}
 
+      {IsAdminLoggedIn && (
+        <Link className={`btn ${isActive('/settings')}`} to='/settings'>
+          <i className="fa-solid fa-gear fa-lg "></i>
+          {!isCollapsed && 'Settings'}
+        </Link>
+      )}
+
+      {IsUserLoggedIn ? (
+        <button className="btn" onClick={() => {
+          localStorage.removeItem('userToken');
+          setIsUserLoggedIn(false);
+          localStorage.removeItem('userRole');
+          window.location.reload();
+        }}>
+          {!isCollapsed && 'User Logout'}
+          <i className="fa-solid fa-right-from-bracket fa-lg "></i>
+        </button>
+      ) : IsAdminLoggedIn ? (
+        <button className="btn " onClick={() => {
+          localStorage.removeItem('adminToken');
+          setIsAdminLoggedIn(false);
+          window.location.reload();
+        }}>
+          <i className="fa-solid fa-right-from-bracket fa-lg "></i>
+          {!isCollapsed && 'Admin Logout'}
+        </button>
+      ) : (
+        <button className="btn" onClick={() => setShowChooseLoginModal(true)}>
+          <i className="fa-solid fa-user fa-lg "></i>
+          {!isCollapsed && 'Login'}
+        </button>
+      )}
       {showChooseLoginModal && (
         <div
           className="modal fade show"
@@ -257,42 +268,43 @@ export default function Navigation() {
       </div>
 
       {/* Theme Selector */}
-      <select value={theme} onChange={(e) => setTheme(e.target.value)} className='btn'>
-        <option value="white">☀️ Light</option>
-        <option value="black">🌑 Dark</option>
-        <option value="red">🩸 Blood</option>
-        <option value="blue">🌊 Ocean</option>
-        <option value="pink">🌸 Rose Blush</option>
-        <option value="yellow">🌞 Sunbeam</option>
-        <option value="brown">🍂 Earthy</option>
-        <option value="green">🌿 Forest</option>
-        <option value="purple">💜 Lavender</option>
-        <option value="orange">🍊 Sunset</option>
-        <option value="grey">🌫️ Fog</option>
-        <option value="aqua">🐬 Aqua Breeze</option>
-        <option value="cool-silver">🧊 Cool Silver</option>
-        <option value="mint">🍀 Mint</option>
+      {!isCollapsed && (
+        <select value={theme} onChange={(e) => setTheme(e.target.value)} className='btn'>
+          <option value="white">☀️ Light</option>
+          <option value="black">🌑 Dark</option>
+          <option value="red">🩸 Blood</option>
+          <option value="blue">🌊 Ocean</option>
+          <option value="pink">🌸 Rose Blush</option>
+          <option value="yellow">🌞 Sunbeam</option>
+          <option value="brown">🍂 Earthy</option>
+          <option value="green">🌿 Forest</option>
+          <option value="purple">💜 Lavender</option>
+          <option value="orange">🍊 Sunset</option>
+          <option value="grey">🌫️ Fog</option>
+          <option value="aqua">🐬 Aqua Breeze</option>
+          <option value="cool-silver">🧊 Cool Silver</option>
+          <option value="mint">🍀 Mint</option>
 
-        {/* Earth Themes */}
-        <option value="earth-tones">🌰 Earth Tones</option>
-        <option value="mountain-stone">🪨 Mountain Stone</option>
-        <option value="sand-dune">🏜️ Sand Dune</option>
-        <option value="forest-floor">🍃 Forest Floor</option>
-        <option value="forest">🌲 Deep Forest</option>
+          {/* Earth Themes */}
+          <option value="earth-tones">🌰 Earth Tones</option>
+          <option value="mountain-stone">🪨 Mountain Stone</option>
+          <option value="sand-dune">🏜️ Sand Dune</option>
+          <option value="forest-floor">🍃 Forest Floor</option>
+          <option value="forest">🌲 Deep Forest</option>
 
-        {/* Space / Galaxy Themes */}
-        <option value="indigo-night">🫐 Indigo Night</option>
-        <option value="galaxy">🌌 Galaxy</option>
-        <option value="nebula-dream">💫 Nebula Dream</option>
-        <option value="cosmic-horizon">🌠 Cosmic Horizon</option>
-        <option value="stellar-sunset">🌇 Stellar Sunset</option>
-        <option value="aurora-borealis">🌈 Aurora Borealis</option>
-        <option value="supernova">💥 Supernova Burst</option>
-        <option value="cosmic-neon">🌌 Cosmic Neon</option>
-        <option value="stellar-candy">🍬 Stellar Candy</option>
+          {/* Space / Galaxy Themes */}
+          <option value="indigo-night">🫐 Indigo Night</option>
+          <option value="galaxy">🌌 Galaxy</option>
+          <option value="nebula-dream">💫 Nebula Dream</option>
+          <option value="cosmic-horizon">🌠 Cosmic Horizon</option>
+          <option value="stellar-sunset">🌇 Stellar Sunset</option>
+          <option value="aurora-borealis">🌈 Aurora Borealis</option>
+          <option value="supernova">💥 Supernova Burst</option>
+          <option value="cosmic-neon">🌌 Cosmic Neon</option>
+          <option value="stellar-candy">🍬 Stellar Candy</option>
 
-      </select>
-
+        </select>
+      )}
     </div>
   );
 }

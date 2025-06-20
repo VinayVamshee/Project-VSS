@@ -739,44 +739,71 @@
 
 .App {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
 .Home {
-  padding: 15px;
+  padding: 5px;
   width: 100%;
 
   background-color: var(--bg-color);
   display: flex;
   flex-direction: column;
   gap: 10px;
+  height: 100vh;
 }
 
 
 .Navigation {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
   padding: 10px;
   gap: 10px;
-  width: 100%;
+  height: 100vh;
   background-color: var(--navigation-color);
-
-  position: sticky;
-  top: 0px;
-  z-index: 100;
   flex-wrap: wrap;
+  transition: width 0.3s ease;
+  width: 200px;
 }
+
+.Navigation.collapsed {
+  width: 70px;
+}
+
+.Navigation.collapsed .btn {
+  justify-content: center;
+  text-align: center;
+}
+
+.Navigation .btn i {
+  margin-right: 5px;
+}
+
+.Navigation.collapsed .btn i {
+  margin-right: 0;
+}
+
+.Navigation.collapsed .btn span,
+.Navigation.collapsed select,
+.Navigation.collapsed .btn::after {
+  display: none !important;
+}
+
 
 .Navigation .btn {
   background-color: var(--btn-bg);
+  width: 100%;
   border-radius: 10px;
   padding: 6px 12px;
   border: 1px solid #ccc;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  justify-content: flex-start;
+  text-align: start;
+  white-space: nowrap;
 }
 
 .Navigation .btn:hover {
@@ -862,7 +889,7 @@
 }
 
 .Home .Grid {
-  height: 90vh;
+  height: 100%;
   overflow-y: scroll;
   background-color: var(--bg-color);
   color: var(--text-color);
@@ -1211,8 +1238,8 @@ button {
 .Settings {
   display: flex;
   width: 100%;
-  min-height: 93vh;
-  margin-top: 6px;
+  height: 100vh;
+  margin-left: 5px;
 }
 
 .Admin-Options {
@@ -1259,7 +1286,7 @@ button {
   background-color: var(--bg-color);
   flex: 1;
   overflow: scroll;
-  height: 93vh;
+  height: 100vh;
 }
 
 /* .btn {

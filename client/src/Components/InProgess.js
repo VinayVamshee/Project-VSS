@@ -332,97 +332,6 @@ export default function InProgress() {
 
                     <div className="AllFilters Filters" >
                         <div className="">
-
-                            <div className="input-group mb-1">
-                                {/* Dropdown to select a date field */}
-                                <button
-                                    className="btn btn-outline-secondary dropdown-toggle"
-                                    type="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                >
-                                    <i className="bi bi-calendar-range me-2"></i>
-                                    {selectedDateRangeField || "Select Date Field"}
-                                </button>
-
-                                <ul className="dropdown-menu dropdown-menu-end">
-                                    {formSchemas
-                                        .flatMap((form) =>
-                                            form.inputFields.flatMap((field) => {
-                                                if (field.type === "group") {
-                                                    return field.fields
-                                                        .filter((subField) =>
-                                                            `${field.label} - ${subField.label}`.toLowerCase().includes("date")
-                                                        )
-                                                        .map((subField) => ({
-                                                            label: `${field.label} - ${subField.label}`,
-                                                            key: `${field.label} - ${subField.label}`,
-                                                        }));
-                                                }
-
-                                                if (field.label.toLowerCase().includes("date")) {
-                                                    return [{ label: field.label, key: field.label }];
-                                                }
-
-                                                return [];
-                                            })
-                                        )
-                                        .map(({ label, key }, idx) => (
-                                            <li key={idx}>
-                                                <button
-                                                    className="dropdown-item"
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setSelectedDateRangeField(key);
-                                                    }}
-                                                >
-                                                    {label}
-                                                </button>
-                                            </li>
-                                        ))}
-                                </ul>
-
-                                {/* Date inputs shown only after field is selected */}
-                                <label className="btn ms-2">From Date</label>
-                                <input
-                                    type="date"
-                                    className="form-control"
-                                    value={dateRange.from}
-                                    onChange={(e) =>
-                                        setDateRange({ ...dateRange, from: e.target.value })
-                                    }
-                                />
-
-                                <label className="btn ms-1">To Date</label>
-                                <input
-                                    type="date"
-                                    className="form-control"
-                                    value={dateRange.to}
-                                    onChange={(e) =>
-                                        setDateRange({ ...dateRange, to: e.target.value })
-                                    }
-                                />
-
-                                <button
-                                    className="btn"
-                                    type="button"
-                                    onClick={() => {
-                                        if (selectedDateRangeField && dateRange.from && dateRange.to) {
-                                            setFilters([
-                                                ...filters,
-                                                {
-                                                    field: selectedDateRangeField,
-                                                    value: `${dateRange.from} to ${dateRange.to}`,
-                                                },
-                                            ]);
-                                            setSelectedDateRangeField("");
-                                            setDateRange({ from: "", to: "" });
-                                        }
-                                    }}
-                                >
-                                    <i className="fa-solid fa-filter me-2"></i>Add Date Filter
-                                </button>
-                            </div>
                             <div className="input-group">
                                 {/* Dropdown for field selection */}
                                 <button
@@ -561,10 +470,100 @@ export default function InProgress() {
                                     <label className="ms-2">Select All</label>
                                 </div>
                                 <button className="btn me-2" onClick={handleDownloadExcel}>
-                                    <i className="fa-solid fa-file-excel me-2"></i> Download Excel
+                                    <i className="fa-solid fa-file-excel me-2"></i> Excel
                                 </button>
                                 <button className="btn" data-bs-toggle="modal" data-bs-target="#fieldSelectModal">
-                                    <i className="fa-solid fa-file-pdf me-2"></i> Download Report
+                                    <i className="fa-solid fa-file-pdf me-2"></i> Report
+                                </button>
+                            </div>
+                             <div className="input-group mb-1">
+                                {/* Dropdown to select a date field */}
+                                <button
+                                    className="btn btn-outline-secondary dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                >
+                                    <i className="bi bi-calendar-range me-2"></i>
+                                    {selectedDateRangeField || "Select Date Field"}
+                                </button>
+
+                                <ul className="dropdown-menu dropdown-menu-end">
+                                    {formSchemas
+                                        .flatMap((form) =>
+                                            form.inputFields.flatMap((field) => {
+                                                if (field.type === "group") {
+                                                    return field.fields
+                                                        .filter((subField) =>
+                                                            `${field.label} - ${subField.label}`.toLowerCase().includes("date")
+                                                        )
+                                                        .map((subField) => ({
+                                                            label: `${field.label} - ${subField.label}`,
+                                                            key: `${field.label} - ${subField.label}`,
+                                                        }));
+                                                }
+
+                                                if (field.label.toLowerCase().includes("date")) {
+                                                    return [{ label: field.label, key: field.label }];
+                                                }
+
+                                                return [];
+                                            })
+                                        )
+                                        .map(({ label, key }, idx) => (
+                                            <li key={idx}>
+                                                <button
+                                                    className="dropdown-item"
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSelectedDateRangeField(key);
+                                                    }}
+                                                >
+                                                    {label}
+                                                </button>
+                                            </li>
+                                        ))}
+                                </ul>
+
+                                {/* Date inputs shown only after field is selected */}
+                                <label className="btn ms-2">From Date</label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    value={dateRange.from}
+                                    onChange={(e) =>
+                                        setDateRange({ ...dateRange, from: e.target.value })
+                                    }
+                                />
+
+                                <label className="btn ms-1">To Date</label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    value={dateRange.to}
+                                    onChange={(e) =>
+                                        setDateRange({ ...dateRange, to: e.target.value })
+                                    }
+                                />
+
+                                <button
+                                    className="btn"
+                                    type="button"
+                                    onClick={() => {
+                                        if (selectedDateRangeField && dateRange.from && dateRange.to) {
+                                            setFilters([
+                                                ...filters,
+                                                {
+                                                    field: selectedDateRangeField,
+                                                    value: `${dateRange.from} to ${dateRange.to}`,
+                                                },
+                                            ]);
+                                            setSelectedDateRangeField("");
+                                            setDateRange({ from: "", to: "" });
+                                        }
+                                    }}
+                                >
+                                    <i className="fa-solid fa-filter me-2"></i>Add Date Filter
                                 </button>
                             </div>
                         </div>
@@ -835,7 +834,7 @@ export default function InProgress() {
                                                         return (
                                                             <div
                                                                 key={fieldKey}
-                                                                className={inputField.type === "group" ? "col-12 mb-3" : "col-12 col-sm-6 col-md-3 mb-3"}
+                                                                className={inputField.type === "group" ? "col-12 mb-3" : "col-12 col-sm-4 col-md-3 mb-3"}
                                                             >
                                                                 {inputField.type === "group" ? (
                                                                     <div>
