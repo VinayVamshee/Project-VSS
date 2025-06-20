@@ -931,7 +931,7 @@
 
 .Home .Grid .Case-Item.active {
   color: black;
-  background-color: whitesmoke;
+  background-color: white;
   /* or any highlight color */
   transition: background-color 0.3s ease;
 }
@@ -1317,4 +1317,13 @@ button {
 .show-btn {
   border: none;
   background-color: transparent;
+}
+
+.case-input-field-heading {
+  background-color: var(--case-overview-bg);
+  text-align: center;
+}
+
+.collapse-content {
+  transition: all 0.3s ease;
 }

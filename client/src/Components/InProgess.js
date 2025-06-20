@@ -302,6 +302,10 @@ export default function InProgress() {
         }
     }, [statusMessage]);
 
+    const [groupCollapseStates, setGroupCollapseStates] = useState({});
+
+
+
     return (
         <div className="Home">
             <div className="Grid">
@@ -476,7 +480,7 @@ export default function InProgress() {
                                     <i className="fa-solid fa-file-pdf me-2"></i> Report
                                 </button>
                             </div>
-                             <div className="input-group mb-1">
+                            <div className="input-group mb-1">
                                 {/* Dropdown to select a date field */}
                                 <button
                                     className="btn btn-outline-secondary dropdown-toggle"
@@ -802,25 +806,50 @@ export default function InProgress() {
                                                             )
                                                         );
 
-                                                    const repeatingGroups = Array.from({ length: repeatCount }).map((_, repeatIndex) => (
-                                                        <div key={`repeat-${repeatIndex}`} className="row mb-3">
-                                                            <p className="fw-bold rounded repeatIndex"> Charged Official ({repeatIndex + 1})</p>
-                                                            {formSchemas
-                                                                .filter(form => form.SNo > chargedSNo && shouldIncludeForm(form))
-                                                                .flatMap((form, formIndex) =>
-                                                                    form.inputFields.map((inputField, index) =>
-                                                                        renderField(inputField, formIndex, index, repeatIndex)
-                                                                    )
-                                                                )}
-                                                        </div>
-                                                    ));
+                                                    const repeatingGroups = Array.from({ length: repeatCount }).map((_, repeatIndex) => {
+                                                        const groupFields = formSchemas
+                                                            .filter(form => form.SNo > chargedSNo && shouldIncludeForm(form))
+                                                            .flatMap((form, formIndex) =>
+                                                                form.inputFields.map((inputField, index) =>
+                                                                    renderField(inputField, formIndex, index, repeatIndex)
+                                                                )
+                                                            );
+
+                                                        return {
+                                                            index: repeatIndex,
+                                                            fields: groupFields
+                                                        };
+                                                    });
 
                                                     return (
                                                         <>
                                                             {staticFields}
-                                                            {repeatingGroups}
+
+                                                            {repeatingGroups.map(({ index, fields }) => (
+                                                                <div key={index} className="mb-3">
+                                                                    <button
+                                                                        className="btn btn-primary btn-sm text-start mb-2"
+                                                                        onClick={() =>
+                                                                            setGroupCollapseStates(prev => ({
+                                                                                ...prev,
+                                                                                [index]: !prev[index]
+                                                                            }))
+                                                                        }
+                                                                    >
+                                                                        {`Charged Official (${index + 1})`}{" "}
+                                                                        <i className={`fa-solid ms-2 ${groupCollapseStates[index] ? 'fa-angles-up' : 'fa-angles-down'}`}></i>
+                                                                    </button>
+
+                                                                    {groupCollapseStates[index] && (
+                                                                        <div className="row px-2">
+                                                                            {fields}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ))}
                                                         </>
                                                     );
+
 
                                                     function renderField(inputField, formIndex, index, repeatIndex = null) {
                                                         const fieldKey = `${formIndex}-${index}${repeatIndex !== null ? `-${repeatIndex}` : ""}`;
@@ -838,7 +867,7 @@ export default function InProgress() {
                                                             >
                                                                 {inputField.type === "group" ? (
                                                                     <div>
-                                                                        <p className="fw-bold">{inputField.label}:</p>
+                                                                        <p className="fw-bold p-2 rounded case-input-field-heading" style={{ fontSize: '17px' }}>{inputField.label}:</p>
                                                                         <div className="row">
                                                                             {inputField.fields.map((subField, idx) => {
                                                                                 const subValueKey = repeatIndex !== null
@@ -846,7 +875,7 @@ export default function InProgress() {
                                                                                     : subField.label;
                                                                                 return (
                                                                                     <div key={idx} className="col-12 col-sm-6 col-md-3 mb-2">
-                                                                                        <label>{subField.label}:</label>
+                                                                                        <label style={{ color: 'blue' }}>{subField.label}:</label>
                                                                                         <input
                                                                                             type={subField.label.toLowerCase().includes("date") ? "date" : "text"}
                                                                                             className="form-control"
@@ -873,7 +902,7 @@ export default function InProgress() {
                                                                     </div>
                                                                 ) : inputField.type === "option" ? (
                                                                     <div>
-                                                                        <p className="fw-bold">{fieldLabel}:</p>
+                                                                        <p className="fw-bold" style={{ color: 'blue' }}>{fieldLabel}:</p>
                                                                         <select
                                                                             className="form-select"
                                                                             disabled={editMode !== caseItem._id}
@@ -901,7 +930,7 @@ export default function InProgress() {
                                                                     </div>
                                                                 ) : (
                                                                     <div>
-                                                                        <p className="fw-bold">{fieldLabel}:</p>
+                                                                        <p className="fw-bold" style={{ color: 'blue' }}>{fieldLabel}:</p>
                                                                         <input
                                                                             type={inputField.label.toLowerCase().includes("date") ? "date" : "text"}
                                                                             className="form-control"
