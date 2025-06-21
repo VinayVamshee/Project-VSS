@@ -1006,6 +1006,7 @@ button {
 
 .mainPage {
   height: 100vh;
+  flex: 1;
   overflow: scroll;
   background-color: var(--bg-color);
 }
