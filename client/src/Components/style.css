@@ -960,11 +960,12 @@
   border-radius: 5px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
-  flex: 1;
+  width: 100%;
+  overflow: scroll;
 }
 
 .Grid .Base-Case div {
-  flex: 1;
+  min-width: 120px;
   white-space: nowrap;
 }
 
