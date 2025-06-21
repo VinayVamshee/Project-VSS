@@ -688,7 +688,7 @@ export default function ClosedCases() {
                                                 );
                                             }}
                                         ></i>
-
+                                           <div>{index + 1}</div>
                                         {/* <div>S.No. {caseItem.SNo}</div> */}
                                         <div>Type of Check - {caseDetails["Type Of Check"] || "Not filled"}</div>
                                         <div>

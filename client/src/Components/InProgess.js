@@ -703,6 +703,7 @@ export default function InProgress() {
                                                     });
                                                 }}
                                             ></i>
+                                             <div>{index + 1}</div>
                                             <div>{caseDetails['PC-DC Number']}</div>
                                             <div>
                                                 <span style={{ fontWeight: 'bold' }}>DOC :</span>{" "}
