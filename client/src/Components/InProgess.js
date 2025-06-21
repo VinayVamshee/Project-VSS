@@ -545,7 +545,7 @@ export default function InProgress() {
 
                                 {/* Add Filter Button */}
                                 <button
-                                    className="btn btn-sm btn-primary"
+                                    className="btn"
                                     type="button"
                                     disabled={!(selectedDateRangeField && dateRange.from && dateRange.to)}
                                     onClick={() => {
