@@ -323,7 +323,7 @@ export default function ClosedCases() {
                     <div className="Filters AllFilters">
                         <div className="">
 
-                            <div className="input-group mb-1">
+                            <div className="input-group mb-2">
                                 {/* Dropdown to select a date field */}
                                 <button
                                     className="btn btn-outline-secondary dropdown-toggle"

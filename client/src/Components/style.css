@@ -841,25 +841,31 @@
   background-color: var(--filter-bg);
   border-radius: 10px;
   max-width: 100%;
-  box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.472);
 }
 
 .AllFilters {
   display: flex;
+  padding: 10px;
   flex-direction: column;
+  flex-wrap: wrap;
+  gap: 5px;
+  background-color: var(--case-info-bg);
+  border-radius: 5px;
 }
 
-.Filters .btn {
+.Filters .btn,
+.AllFilters .btn {
   background-color: var(--btn-bg);
   color: var(--text-color);
-  padding: 6px 12px;
+  padding: 6px 8px;
   border-radius: 6px;
   border: 1px solid #ccc;
   transition: background-color 0.2s ease;
   transition: 0.2s ease-in-out;
 }
 
-.Filters .btn:hover {
+.Filters .btn:hover,
+.AllFilters .btn:hover {
   background-color: var(--btn-hover-bg);
   box-shadow: 5px 5px 8px rgba(0, 0, 0, 0.313);
 }
@@ -1129,7 +1135,7 @@ button {
   }
 }
 
-.Filters .dropdown-menu {
+ .dropdown-menu {
   height: 500px;
   overflow-y: scroll;
 }

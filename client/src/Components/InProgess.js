@@ -333,177 +333,175 @@ export default function InProgress() {
                         </button>
                     </div>
 
+                    <div className="AllFilters" >
 
-                    <div className="AllFilters Filters" >
-                        <div className="">
-                            <div className="input-group">
-                                {/* Dropdown for field selection */}
-                                <button
-                                    className="btn btn-outline-secondary dropdown-toggle"
-                                    type="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                >
-                                    <i className="fa-brands fa-searchengin fa-xl me-2"></i>{selectedField || "Select field"}
-                                </button>
-                                <ul className="dropdown-menu dropdown-menu-end">
-                                    {formSchemas
-                                        .flatMap((form) =>
-                                            form.inputFields.flatMap((field) => {
-                                                if (field.type === "group") {
-                                                    return field.fields.map((subField) => ({
-                                                        label: `${field.label} - ${subField.label}`,
-                                                        key: `${field.label} - ${subField.label}`,
-                                                    }));
-                                                }
-                                                return [{ label: field.label, key: field.label }];
-                                            })
-                                        )
-                                        .map(({ label, key }, idx) => (
-                                            <li key={idx}>
-                                                <button
-                                                    className="dropdown-item"
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setSelectedField(key);
-                                                        setSearchText(""); // reset search value
-                                                    }}
-                                                >
-                                                    {label}
-                                                </button>
-                                            </li>
-                                        ))}
-                                </ul>
-
-                                {/* Dynamic input box or select based on selected field */}
-                                {(() => {
-                                    let selectedConfig = null;
-
-                                    for (const form of formSchemas) {
-                                        for (const field of form.inputFields) {
+                        <div className="input-group">
+                            <div className='btn me-2'>
+                                <input type="checkbox" checked={selectAll} onChange={(e) => {
+                                    const checked = e.target.checked;
+                                    setSelectAll(checked);
+                                    if (checked) {
+                                        const allVisibleCaseIds = filteredCases.map((c) => c._id);
+                                        setSelectedCases(allVisibleCaseIds);
+                                    } else {
+                                        setSelectedCases([]);
+                                    }
+                                }}
+                                />
+                                <label className="ms-2">Select All</label>
+                            </div>
+                            <button className="btn me-2" type="button" data-bs-toggle="collapse" data-bs-target="#dateFilterCollapse" aria-expanded="false" aria-controls="dateFilterCollapse" >
+                                <i className="bi bi-calendar-range me-2"></i>
+                                {selectedDateRangeField && dateRange.from && dateRange.to
+                                    ? `${selectedDateRangeField}: ${dateRange.from} → ${dateRange.to}`
+                                    : "Select Date Range"}
+                            </button>
+                            <button
+                                className="btn dropdown-toggle"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                            >
+                                <i className="fa-brands fa-searchengin fa-xl me-2"></i>{selectedField || "Select field"}
+                            </button>
+                            <ul className="dropdown-menu dropdown-menu-end">
+                                {formSchemas
+                                    .flatMap((form) =>
+                                        form.inputFields.flatMap((field) => {
                                             if (field.type === "group") {
-                                                for (const subField of field.fields) {
-                                                    if (`${field.label} - ${subField.label}` === selectedField) {
-                                                        selectedConfig = {
-                                                            type: "group-subfield",
-                                                            config: subField,
-                                                            parentLabel: field.label,
-                                                        };
-                                                        break;
-                                                    }
-                                                }
-                                            } else {
-                                                if (field.label === selectedField) {
-                                                    selectedConfig = { type: field.type, config: field };
+                                                return field.fields.map((subField) => ({
+                                                    label: `${field.label} - ${subField.label}`,
+                                                    key: `${field.label} - ${subField.label}`,
+                                                }));
+                                            }
+                                            return [{ label: field.label, key: field.label }];
+                                        })
+                                    )
+                                    .map(({ label, key }, idx) => (
+                                        <li key={idx}>
+                                            <button
+                                                className="dropdown-item"
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedField(key);
+                                                    setSearchText(""); // reset search value
+                                                }}
+                                            >
+                                                {label}
+                                            </button>
+                                        </li>
+                                    ))}
+                            </ul>
+
+                            {/* Dynamic input box or select based on selected field */}
+                            {(() => {
+                                let selectedConfig = null;
+
+                                for (const form of formSchemas) {
+                                    for (const field of form.inputFields) {
+                                        if (field.type === "group") {
+                                            for (const subField of field.fields) {
+                                                if (`${field.label} - ${subField.label}` === selectedField) {
+                                                    selectedConfig = {
+                                                        type: "group-subfield",
+                                                        config: subField,
+                                                        parentLabel: field.label,
+                                                    };
                                                     break;
                                                 }
                                             }
-                                            if (selectedConfig) break;
+                                        } else {
+                                            if (field.label === selectedField) {
+                                                selectedConfig = { type: field.type, config: field };
+                                                break;
+                                            }
                                         }
                                         if (selectedConfig) break;
                                     }
+                                    if (selectedConfig) break;
+                                }
 
-                                    if (selectedConfig?.type === "option") {
-                                        return (
-                                            <select
-                                                className="form-select"
-                                                value={searchText}
-                                                onChange={(e) => setSearchText(e.target.value)}
-                                            >
-                                                <option value="">Select {selectedField}</option>
-                                                {selectedConfig.config.fields.map((option, idx) => (
-                                                    <option key={idx} value={option.label}>
-                                                        {option.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        );
-                                    }
-
-                                    // Default: show text input
+                                if (selectedConfig?.type === "option") {
                                     return (
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            placeholder={`Enter search value for ${selectedField || "Select field"}`}
+                                        <select
+                                            className="form-select"
                                             value={searchText}
                                             onChange={(e) => setSearchText(e.target.value)}
-                                        />
+                                        >
+                                            <option value="">Select {selectedField}</option>
+                                            {selectedConfig.config.fields.map((option, idx) => (
+                                                <option key={idx} value={option.label}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
                                     );
-                                })()}
+                                }
 
-                                {/* Add Filter Button */}
-                                <button
-                                    className="btn btn-outline-primary ms-2"
-                                    type="button"
-                                    onClick={() => {
-                                        if (selectedField && searchText) {
-                                            setFilters([...filters, { field: selectedField, value: searchText }]);
-                                            setSelectedField("");
-                                            setSearchText("");
-                                        }
-                                    }}
-                                >
-                                    <i className="fa-solid fa-filter fa-lg me-2"></i>Add Filter
-                                </button>
+                                // Default: show text input
+                                return (
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder={`Enter search value for ${selectedField || "Select field"}`}
+                                        value={searchText}
+                                        onChange={(e) => setSearchText(e.target.value)}
+                                    />
+                                );
+                            })()}
 
-                                {/* Reset all filters */}
-                                <button
-                                    className="btn btn-outline-danger mx-2"
-                                    type="button"
-                                    onClick={() => {
+                            {/* Add Filter Button */}
+                            <button
+                                className="btn ms-2"
+                                type="button"
+                                onClick={() => {
+                                    if (selectedField && searchText) {
+                                        setFilters([...filters, { field: selectedField, value: searchText }]);
                                         setSelectedField("");
                                         setSearchText("");
-                                        setFilters([]);
-                                    }}
-                                >
-                                    <i className="fa-solid fa-xmark fa-lg me-2"></i>Reset
-                                </button>
-                                <div className='btn me-2'>
-                                    <input type="checkbox" checked={selectAll} onChange={(e) => {
-                                        const checked = e.target.checked;
-                                        setSelectAll(checked);
-                                        if (checked) {
-                                            const allVisibleCaseIds = filteredCases.map((c) => c._id);
-                                            setSelectedCases(allVisibleCaseIds);
-                                        } else {
-                                            setSelectedCases([]);
-                                        }
-                                    }}
-                                    />
-                                    <label className="ms-2">Select All</label>
-                                </div>
-                                <button className="btn me-2" onClick={handleDownloadExcel}>
-                                    <i className="fa-solid fa-file-excel me-2"></i> Excel
-                                </button>
-                                <button className="btn" data-bs-toggle="modal" data-bs-target="#fieldSelectModal">
-                                    <i className="fa-solid fa-file-pdf me-2"></i> Report
-                                </button>
-                            </div>
-                            <div className="input-group mb-1">
-                                {/* Dropdown to select a date field */}
-                                <button
-                                    className="btn btn-outline-secondary dropdown-toggle"
-                                    type="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                >
-                                    <i className="bi bi-calendar-range me-2"></i>
-                                    {selectedDateRangeField || "Select Date Field"}
-                                </button>
+                                    }
+                                }}
+                            >
+                                <i className="fa-solid fa-filter fa-lg me-2"></i>Add Filter
+                            </button>
 
-                                <ul className="dropdown-menu dropdown-menu-end">
-                                    {formSchemas
-                                        .flatMap((form) =>
+                            {/* Reset all filters */}
+                            <button
+                                className="btn mx-2"
+                                type="button"
+                                onClick={() => {
+                                    setSelectedField("");
+                                    setSearchText("");
+                                    setFilters([]);
+                                }}
+                            >
+                                <i className="fa-solid fa-xmark fa-lg me-2"></i>Reset
+                            </button>
+                            <button className="btn" onClick={handleDownloadExcel}>
+                                <i className="fa-solid fa-file-excel me-2"></i> Excel
+                            </button>
+                            <button className="btn" data-bs-toggle="modal" data-bs-target="#fieldSelectModal">
+                                <i className="fa-solid fa-file-pdf me-2"></i> Report
+                            </button>
+                        </div>
+                        {/* Collapsible Filter Section */}
+                        <div className="collapse " id="dateFilterCollapse">
+                            <div className="d-flex align-items-center gap-2 flex-wrap">
+
+                                {/* Dropdown to select Date Field */}
+                                <div className="dropdown">
+                                    <button className="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" > {selectedDateRangeField || "Choose Date Field"} </button>
+                                    <ul className="dropdown-menu">
+                                        {formSchemas.flatMap((form) =>
                                             form.inputFields.flatMap((field) => {
                                                 if (field.type === "group") {
                                                     return field.fields
-                                                        .filter((subField) =>
-                                                            `${field.label} - ${subField.label}`.toLowerCase().includes("date")
+                                                        .filter((sub) =>
+                                                            `${field.label} - ${sub.label}`.toLowerCase().includes("date")
                                                         )
-                                                        .map((subField) => ({
-                                                            label: `${field.label} - ${subField.label}`,
-                                                            key: `${field.label} - ${subField.label}`,
+                                                        .map((sub) => ({
+                                                            label: `${field.label} - ${sub.label}`,
+                                                            key: `${field.label} - ${sub.label}`,
                                                         }));
                                                 }
 
@@ -513,64 +511,60 @@ export default function InProgress() {
 
                                                 return [];
                                             })
-                                        )
-                                        .map(({ label, key }, idx) => (
+                                        ).map(({ label, key }, idx) => (
                                             <li key={idx}>
                                                 <button
                                                     className="dropdown-item"
                                                     type="button"
-                                                    onClick={() => {
-                                                        setSelectedDateRangeField(key);
-                                                    }}
+                                                    onClick={() => setSelectedDateRangeField(key)}
                                                 >
                                                     {label}
                                                 </button>
                                             </li>
                                         ))}
-                                </ul>
+                                    </ul>
+                                </div>
 
-                                {/* Date inputs shown only after field is selected */}
-                                <label className="btn ms-2">From Date</label>
+                                {/* From Date */}
                                 <input
                                     type="date"
                                     className="form-control"
                                     value={dateRange.from}
-                                    onChange={(e) =>
-                                        setDateRange({ ...dateRange, from: e.target.value })
-                                    }
+                                    onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
+                                    style={{ flex: '1' }}
                                 />
 
-                                <label className="btn ms-1">To Date</label>
+                                {/* To Date */}
                                 <input
                                     type="date"
                                     className="form-control"
                                     value={dateRange.to}
-                                    onChange={(e) =>
-                                        setDateRange({ ...dateRange, to: e.target.value })
-                                    }
+                                    onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
+                                    style={{ flex: '1' }}
                                 />
 
+                                {/* Add Filter Button */}
                                 <button
-                                    className="btn"
+                                    className="btn btn-sm btn-primary"
                                     type="button"
+                                    disabled={!(selectedDateRangeField && dateRange.from && dateRange.to)}
                                     onClick={() => {
-                                        if (selectedDateRangeField && dateRange.from && dateRange.to) {
-                                            setFilters([
-                                                ...filters,
-                                                {
-                                                    field: selectedDateRangeField,
-                                                    value: `${dateRange.from} to ${dateRange.to}`,
-                                                },
-                                            ]);
-                                            setSelectedDateRangeField("");
-                                            setDateRange({ from: "", to: "" });
-                                        }
+                                        setFilters([
+                                            ...filters,
+                                            {
+                                                field: selectedDateRangeField,
+                                                value: `${dateRange.from} to ${dateRange.to}`,
+                                            },
+                                        ]);
+                                        setSelectedDateRangeField("");
+                                        setDateRange({ from: "", to: "" });
                                     }}
                                 >
-                                    <i className="fa-solid fa-filter me-2"></i>Add Date Filter
+                                    <i className="fa-solid fa-filter me-2"></i>Add Filter
                                 </button>
                             </div>
                         </div>
+
 
                         {/* Show active filters */}
                         <div style={{ margin: '0px 0px 0px 0px', padding: '0px' }}>
@@ -637,7 +631,7 @@ export default function InProgress() {
                             </div>
 
                             <div className="modal-footer bg-light rounded-bottom-4">
-                                <button type="button" className="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                <button type="button" className="btn" data-bs-dismiss="modal">
                                     Cancel
                                 </button>
 
@@ -703,7 +697,7 @@ export default function InProgress() {
                                                     });
                                                 }}
                                             ></i>
-                                             <div>{index + 1}</div>
+                                            <div>{index + 1}</div>
                                             <div>{caseDetails['PC-DC Number']}</div>
                                             <div>
                                                 <span style={{ fontWeight: 'bold' }}>DOC :</span>{" "}
