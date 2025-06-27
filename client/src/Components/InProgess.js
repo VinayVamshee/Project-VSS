@@ -820,31 +820,40 @@ export default function InProgress() {
                                                         <>
                                                             {staticFields}
 
-                                                            {repeatingGroups.map(({ index, fields }) => (
-                                                                <div key={index} className="mb-3">
-                                                                    <button
-                                                                        className="btn btn-primary btn-sm text-start mb-2"
-                                                                        onClick={() =>
-                                                                            setGroupCollapseStates(prev => ({
-                                                                                ...prev,
-                                                                                [index]: !prev[index]
-                                                                            }))
-                                                                        }
-                                                                    >
-                                                                        {`Charged Official (${index + 1})`}{" "}
-                                                                        <i className={`fa-solid ms-2 ${groupCollapseStates[index] ? 'fa-angles-up' : 'fa-angles-down'}`}></i>
-                                                                    </button>
+                                                            {repeatingGroups.map(({ index, fields }) => {
+                                                                const nameKey = `Name Of Charged Official_${index}`;
+                                                                const nameValue = editMode === caseItem._id
+                                                                    ? updatedFields[nameKey] ?? caseDetails[nameKey]
+                                                                    : caseDetails[nameKey];
 
-                                                                    {groupCollapseStates[index] && (
-                                                                        <div className="row px-2">
-                                                                            {fields}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            ))}
+                                                                return (
+                                                                    <div key={index} className="mb-3">
+                                                                        <button
+                                                                            className="btn btn-primary btn-sm text-start mb-2"
+                                                                            onClick={() =>
+                                                                                setGroupCollapseStates(prev => ({
+                                                                                    ...prev,
+                                                                                    [index]: !prev[index]
+                                                                                }))
+                                                                            }
+                                                                        >
+                                                                            {nameValue?.trim()
+                                                                                ? nameValue
+                                                                                : `Charged Official (${index + 1})`}{" "}
+                                                                            <i className={`fa-solid ms-2 ${groupCollapseStates[index] ? 'fa-angles-up' : 'fa-angles-down'}`}></i>
+                                                                        </button>
+
+                                                                        {groupCollapseStates[index] && (
+                                                                            <div className="row px-2">
+                                                                                {fields}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}
+
                                                         </>
                                                     );
-
 
                                                     function renderField(inputField, formIndex, index, repeatIndex = null) {
                                                         const fieldKey = `${formIndex}-${index}${repeatIndex !== null ? `-${repeatIndex}` : ""}`;

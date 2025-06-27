@@ -952,7 +952,7 @@
 
 .Grid .Base-Case {
   display: flex;
-  gap: 15px;
+  gap: 10px;
   align-items: center;
   justify-content: flex-start;
   padding: 10px;
@@ -965,7 +965,7 @@
 }
 
 .Grid .Base-Case div {
-  min-width: 120px;
+  min-width: 50px;
   white-space: nowrap;
 }
 
@@ -1137,7 +1137,7 @@ button {
   }
 }
 
- .dropdown-menu {
+.dropdown-menu {
   height: 500px;
   overflow-y: scroll;
 }
