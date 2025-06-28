@@ -948,6 +948,17 @@
   width: 100%;
   align-items: center;
   justify-content: space-between;
+
+  scrollbar-width: none;
+
+  /* Hide scrollbar for WebKit browsers (Chrome, Safari) */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+
+.Grid .Case-OverView::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 
 .Grid .Base-Case {
