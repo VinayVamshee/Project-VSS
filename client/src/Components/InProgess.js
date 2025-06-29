@@ -828,27 +828,28 @@ export default function InProgress() {
 
                                                                 return (
                                                                     <div key={index} className="mb-3">
-                                                                        <button
-                                                                            className="btn btn-primary btn-sm text-start mb-2"
-                                                                            onClick={() =>
-                                                                                setGroupCollapseStates(prev => ({
-                                                                                    ...prev,
-                                                                                    [index]: !prev[index]
-                                                                                }))
-                                                                            }
-                                                                        >
-                                                                            {nameValue?.trim()
-                                                                                ? nameValue
-                                                                                : `Charged Official (${index + 1})`}{" "}
-                                                                            <i className={`fa-solid ms-2 ${groupCollapseStates[index] ? 'fa-angles-up' : 'fa-angles-down'}`}></i>
-                                                                        </button>
+  <button
+    className={`btn btn-sm text-start px-2 rounded-3 shadow-sm btn-warning`}
+    onClick={() =>
+      setGroupCollapseStates(prev => ({
+        ...prev,
+        [index]: !prev[index]
+      }))
+    }
+  >
+    <span className="fw-semibold">
+      {nameValue?.trim() ? nameValue : `Charged Official (${index + 1})`}
+    </span>
+    <i className={`fa-solid ms-2 ${groupCollapseStates[index] ? 'fa-angles-up' : 'fa-angles-down'}`}></i>
+  </button>
 
-                                                                        {groupCollapseStates[index] && (
-                                                                            <div className="row px-2">
-                                                                                {fields}
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
+  {groupCollapseStates[index] && (
+    <div className="row p-3 mt-2 bg-light border rounded shadow-sm" style={{ animation: 'slideDownX 0.3s ease-in-out' }}>
+      {fields}
+    </div>
+  )}
+</div>
+
                                                                 );
                                                             })}
 

@@ -1014,6 +1014,18 @@ button {
   }
 }
 
+@keyframes slideDownX {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  100% {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}
+
 .mainPage {
   height: 100vh;
   flex: 1;
