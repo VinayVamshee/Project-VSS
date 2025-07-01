@@ -709,33 +709,6 @@
 }
 
 
-.Navigation .btn {
-  background-color: var(--btn-bg);
-  color: var(--text-color);
-  transition: 0.3s ease-in-out;
-}
-
-.Navigation .btn.active {
-  background-color: var(--status-btn-active-bg);
-  border: 1px solid var(--accent-color);
-  color: white;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.56);
-  transform: scale(1.02);
-}
-
-.delete-button {
-  background-color: rgb(255, 72, 72);
-}
-
-.btn {
-  transition: 0.3s ease-in-out;
-}
-
-.btn:hover {
-  background-color: var(--btn-hover-bg);
-  transform: scale(1.05);
-  box-shadow: 5px 5px 8px rgba(0, 0, 0, 0.313);
-}
 
 .App {
   display: flex;
@@ -760,7 +733,7 @@
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
-  padding: 10px;
+
   gap: 10px;
   height: 100vh;
   background-color: var(--navigation-color);
@@ -770,12 +743,13 @@
 }
 
 .Navigation.collapsed {
-  width: 70px;
+  width: 50px;
 }
 
 .Navigation.collapsed .btn {
   justify-content: center;
   text-align: center;
+  padding: 10px;
 }
 
 .Navigation .btn i {
@@ -783,7 +757,8 @@
 }
 
 .Navigation.collapsed .btn i {
-  margin-right: 0;
+  margin: 0px;
+  padding: 0px;
 }
 
 .Navigation.collapsed .btn span,
@@ -794,20 +769,47 @@
 
 
 .Navigation .btn {
-  background-color: var(--btn-bg);
+
   width: 100%;
-  border-radius: 10px;
+
   padding: 6px 12px;
-  border: 1px solid #ccc;
   cursor: pointer;
   transition: background-color 0.2s ease;
   justify-content: flex-start;
   text-align: start;
   white-space: nowrap;
+
+  color: white;
+  transition: 0.3s ease-in-out;
+  border-radius: 0px;
+  border-bottom: 1px solid var(--accent-color);
 }
 
 .Navigation .btn:hover {
+  background-color: var(--btn-bg);
+  color: var(--text-color);
+  transform: scale(1);
+  box-shadow: 0 0 0 0;
+}
+
+.Navigation .btn.active {
+  background-color: var(--case-overview-bg);
+  border: 1px solid var(--accent-color);
+  color: black;
+}
+
+.delete-button {
+  background-color: rgb(255, 72, 72);
+}
+
+.btn {
+  transition: 0.3s ease-in-out;
+}
+
+.btn:hover {
   background-color: var(--btn-hover-bg);
+  transform: scale(1.05);
+  box-shadow: 5px 5px 8px rgba(0, 0, 0, 0.313);
 }
 
 .AddNewSheet {

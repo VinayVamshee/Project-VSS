@@ -87,7 +87,7 @@ export default function Navigation() {
     <div className={`Navigation d-flex flex-column ${isCollapsed ? 'collapsed' : ''}`}>
 
       <button
-        className="btn btn-sm btn-secondary "
+        className="btn btn-sm "
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
         <i className={`fa-solid ${isCollapsed ? 'fa-angles-right' : 'fa-angles-left'}`}></i>
