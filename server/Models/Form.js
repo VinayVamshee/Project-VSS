@@ -6,7 +6,7 @@ const subFieldSchema = new mongoose.Schema({
 
 const inputFieldSchema = new mongoose.Schema({
     label: { type: String, required: true },
-    type: { type: String, enum: ['group', 'field', 'option'], required: true },
+    type: { type: String, enum: ['group', 'field', 'option', 'link'], required: true },
     fields: [subFieldSchema]
 });
 

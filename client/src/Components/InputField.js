@@ -241,6 +241,7 @@ export default function InputField() {
                             <option value="field">Individual Field</option>
                             <option value="group">Group of Fields</option>
                             <option value="option">Group of Options</option>
+                            <option value="link">Link</option>
                         </select>
                     </div>
 
@@ -337,6 +338,20 @@ export default function InputField() {
                                     DAR Action
                                 </label>
                             </div>
+
+                            <div className="form-check">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    value="More Information"
+                                    checked={showIn.includes('More Information')}
+                                    onChange={handleCheckboxChange}
+                                    id="showin-MoreInformation"
+                                />
+                                <label className="form-check-label" htmlFor="showin-MoreInformation">
+                                    More Information
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -402,12 +417,37 @@ export default function InputField() {
                                                 </option>
                                             ))}
                                         </select>
+                                    ) : inputField.type === 'link' ? (
+                                        <div className="d-flex align-items-center gap-2">
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder={`Enter ${inputField.label}`}
+                                                value={formData[inputField.label] || ''}
+                                                onChange={(e) => handleChange(inputField.label, e.target.value)}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm link"
+                                                title="Open Link"
+                                                onClick={() => {
+                                                    const url = formData[inputField.label];
+                                                    if (url) window.open(url, '_blank');
+                                                    else alert('No link provided');
+                                                }}
+                                            >
+                                                <i className="fas fa-external-link-alt"></i>
+                                            </button>
+                                        </div>
+
                                     ) : (
                                         <input
                                             type={inputField.label.toLowerCase().includes("date") ? "date" : "text"}
                                             className="form-control"
                                             placeholder={`Enter ${inputField.label}`}
+                                            value={formData[inputField.label] || ''}
                                             onChange={(e) => handleChange(inputField.label, e.target.value)}
+                                            title={formData[inputField.label] || ''}
                                         />
                                     )}
                                 </div>
@@ -459,6 +499,7 @@ export default function InputField() {
                                         <option value="field">Individual Field</option>
                                         <option value="group">Group of Fields</option>
                                         <option value="option">Group of Options</option>
+                                        <option value="link">Link</option>
                                     </select>
                                 </div>
 
@@ -484,7 +525,7 @@ export default function InputField() {
 
                                     <label className="form-label">Show In</label>
                                     <div className="d-flex gap-4 flex-wrap">
-                                        {['Case Registration', 'Preventive Check', 'Decoy Check', 'Complaint', 'DAR Action'].map((val) => (
+                                        {['Case Registration', 'Preventive Check', 'Decoy Check', 'Complaint', 'DAR Action', 'More Information'].map((val) => (
                                             <div className="form-check" key={val}>
                                                 <input
                                                     className="form-check-input"

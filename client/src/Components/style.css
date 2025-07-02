@@ -780,7 +780,7 @@
   white-space: nowrap;
 
   color: white;
-  transition: 0.3s ease-in-out;
+  transition: 0.1s ease-in-out;
   border-radius: 0px;
   border-bottom: 1px solid var(--accent-color);
 }
@@ -821,6 +821,14 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.link {
+  background-color: var(--navigation-color);
+  color: white;
+}
+.link:hover {
+  cursor: pointer;
 }
 
 .Filter-Grid {
@@ -1352,8 +1360,9 @@ button {
 }
 
 .case-input-field-heading {
-  background-color: var(--case-overview-bg);
+  background-color: var(--case-info-bg);
   text-align: center;
+  padding: 5px 8px;
 }
 
 .collapse-content {

@@ -763,6 +763,15 @@ export default function InProgress() {
                                                     >
                                                         <i className="fa-solid fa-square-caret-up fa-rotate-180 fa-lg"></i>
                                                     </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target={`#MoreInformation-${caseItem._id}`}
+                                                        title="More Information"
+                                                    >
+                                                        <i className="fas fa-info-circle fa-lg"></i>
+                                                    </button>
                                                 </>
                                             )
                                         }
@@ -828,27 +837,27 @@ export default function InProgress() {
 
                                                                 return (
                                                                     <div key={index} className="mb-3">
-  <button
-    className={`btn btn-sm text-start px-2 rounded-3 shadow-sm btn-warning`}
-    onClick={() =>
-      setGroupCollapseStates(prev => ({
-        ...prev,
-        [index]: !prev[index]
-      }))
-    }
-  >
-    <span className="fw-semibold">
-      {nameValue?.trim() ? nameValue : `Charged Official (${index + 1})`}
-    </span>
-    <i className={`fa-solid ms-2 ${groupCollapseStates[index] ? 'fa-angles-up' : 'fa-angles-down'}`}></i>
-  </button>
+                                                                        <button
+                                                                            className={`btn btn-sm text-start px-2 rounded-3 shadow-sm btn-warning`}
+                                                                            onClick={() =>
+                                                                                setGroupCollapseStates(prev => ({
+                                                                                    ...prev,
+                                                                                    [index]: !prev[index]
+                                                                                }))
+                                                                            }
+                                                                        >
+                                                                            <span className="fw-semibold">
+                                                                                {nameValue?.trim() ? nameValue : `Charged Official (${index + 1})`}
+                                                                            </span>
+                                                                            <i className={`fa-solid ms-2 ${groupCollapseStates[index] ? 'fa-angles-up' : 'fa-angles-down'}`}></i>
+                                                                        </button>
 
-  {groupCollapseStates[index] && (
-    <div className="row p-3 mt-2 bg-light border rounded shadow-sm" style={{ animation: 'slideDownX 0.3s ease-in-out' }}>
-      {fields}
-    </div>
-  )}
-</div>
+                                                                        {groupCollapseStates[index] && (
+                                                                            <div className="row p-3 mt-2 bg-light border rounded shadow-sm" style={{ animation: 'slideDownX 0.3s ease-in-out' }}>
+                                                                                {fields}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
 
                                                                 );
                                                             })}
@@ -872,12 +881,17 @@ export default function InProgress() {
                                                             >
                                                                 {inputField.type === "group" ? (
                                                                     <div>
-                                                                        <p className="fw-bold p-2 rounded case-input-field-heading" style={{ fontSize: '17px' }}>{inputField.label}:</p>
+                                                                        <p className="fw-bold rounded case-input-field-heading" style={{ fontSize: '17px' }}>{inputField.label}:</p>
                                                                         <div className="row">
                                                                             {inputField.fields.map((subField, idx) => {
                                                                                 const subValueKey = repeatIndex !== null
                                                                                     ? `${subField.label}_${repeatIndex}`
                                                                                     : subField.label;
+                                                                                const value =
+                                                                                    editMode === caseItem._id
+                                                                                        ? updatedFields[subValueKey] ?? caseDetails[subValueKey] ?? ""
+                                                                                        : caseDetails[subValueKey] ?? "";
+
                                                                                 return (
                                                                                     <div key={idx} className="col-12 col-sm-6 col-md-3 mb-2">
                                                                                         <label style={{ color: 'blue' }}>{subField.label}:</label>
@@ -885,11 +899,8 @@ export default function InProgress() {
                                                                                             type={subField.label.toLowerCase().includes("date") ? "date" : "text"}
                                                                                             className="form-control"
                                                                                             placeholder={`Enter ${subField.label}`}
-                                                                                            value={
-                                                                                                editMode === caseItem._id
-                                                                                                    ? updatedFields[subValueKey] ?? caseDetails[subValueKey] ?? ""
-                                                                                                    : caseDetails[subValueKey] ?? ""
-                                                                                            }
+                                                                                            value={value}
+                                                                                            title={value}
                                                                                             disabled={editMode !== caseItem._id}
                                                                                             onChange={(e) => {
                                                                                                 if (editMode === caseItem._id) {
@@ -933,6 +944,51 @@ export default function InProgress() {
                                                                             ))}
                                                                         </select>
                                                                     </div>
+                                                                ) : inputField.type === "link" ? (
+                                                                    <div>
+                                                                        <p className="fw-bold" style={{ color: 'blue' }}>{fieldLabel}:</p>
+                                                                        <div className="d-flex align-items-center gap-2">
+                                                                            <input
+                                                                                type="text"
+                                                                                className="form-control"
+                                                                                placeholder={`Enter ${inputField.label}`}
+                                                                                value={
+                                                                                    editMode === caseItem._id
+                                                                                        ? updatedFields[valueKey] ?? caseDetails[valueKey] ?? ""
+                                                                                        : caseDetails[valueKey] ?? ""
+                                                                                }
+                                                                                title={
+                                                                                    editMode === caseItem._id
+                                                                                        ? updatedFields[valueKey] ?? caseDetails[valueKey] ?? ""
+                                                                                        : caseDetails[valueKey] ?? ""
+                                                                                }
+                                                                                disabled={editMode !== caseItem._id}
+                                                                                onChange={(e) => {
+                                                                                    if (editMode === caseItem._id) {
+                                                                                        setUpdatedFields((prev) => ({
+                                                                                            ...prev,
+                                                                                            [valueKey]: e.target.value
+                                                                                        }));
+                                                                                    }
+                                                                                }}
+                                                                            />
+                                                                            <button
+                                                                                type="button"
+                                                                                className="btn btn-sm link"
+                                                                                title="Open Link"
+                                                                                onClick={() => {
+                                                                                    const url =
+                                                                                        editMode === caseItem._id
+                                                                                            ? updatedFields[valueKey] ?? caseDetails[valueKey]
+                                                                                            : caseDetails[valueKey];
+                                                                                    if (url) window.open(url, "_blank");
+                                                                                    else alert("No link provided");
+                                                                                }}
+                                                                            >
+                                                                                <i className="fas fa-external-link-alt"></i>
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
                                                                 ) : (
                                                                     <div>
                                                                         <p className="fw-bold" style={{ color: 'blue' }}>{fieldLabel}:</p>
@@ -941,6 +997,11 @@ export default function InProgress() {
                                                                             className="form-control"
                                                                             placeholder={`Enter ${inputField.label}`}
                                                                             value={
+                                                                                editMode === caseItem._id
+                                                                                    ? updatedFields[valueKey] ?? caseDetails[valueKey] ?? ""
+                                                                                    : caseDetails[valueKey] ?? ""
+                                                                            }
+                                                                            title={
                                                                                 editMode === caseItem._id
                                                                                     ? updatedFields[valueKey] ?? caseDetails[valueKey] ?? ""
                                                                                     : caseDetails[valueKey] ?? ""
@@ -1066,6 +1127,7 @@ export default function InProgress() {
                                             </div>
                                         </div>
                                     </div>
+
                                 </div>
                             );
                         })
@@ -1076,13 +1138,149 @@ export default function InProgress() {
                     )}
             </div>
 
-            <div style={{
-                position: 'absolute',
-                top: '-9999px',
-                left: '-9999px',
-                width: '1000px',
-            }}
-            >
+            {filteredCases.map((caseItem, index) => {
+                const caseDetails = caseItem.inputFields || {};
+                const modalId = `MoreInformation-${caseItem._id}`;
+
+                // Optional: helper to decide which fields to show
+                const moreInfoForms = formSchemas.filter(form =>
+                    Array.isArray(form.showIn) &&
+                    form.showIn.some(s => s.toLowerCase() === "more information")
+                );
+
+                return (
+                    <div
+                        key={`modal-${caseItem._id}`}
+                        className="modal fade"
+                        id={modalId}
+                        tabIndex="-1"
+                        aria-labelledby={`${modalId}-label`}
+                        aria-hidden="true"
+                    >
+                        <div className="modal-dialog modal-xl modal-dialog-scrollable">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title" id={`${modalId}-label`}>
+                                        More Information – {caseDetails["Registration No."] || ""}
+                                    </h5>
+                                    <button
+                                        type="button"
+                                        className="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"
+                                    ></button>
+                                </div>
+                                <div className="modal-body">
+                                    <div className="container-fluid">
+                                        <div className="row">
+                                            {moreInfoForms.map((form, formIndex) =>
+                                                form.inputFields.map((inputField, fieldIndex) => {
+                                                    const value = caseDetails[inputField.label] || "";
+
+                                                    return (
+                                                        <div
+                                                            key={`${formIndex}-${fieldIndex}`}
+                                                            className="col-12 col-sm-6 col-md-4 mb-3"
+                                                        >
+                                                            <label className="fw-bold text-primary mb-1">
+                                                                {inputField.label}
+                                                            </label>
+
+                                                            {inputField.type === "option" ? (
+                                                                <select className="form-select" value={value} disabled>
+                                                                    <option value="">Select</option>
+                                                                    {inputField.fields.map((opt, idx) => (
+                                                                        <option key={idx} value={opt.label}>
+                                                                            {opt.label}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            ) : inputField.type === "link" ? (
+                                                                <div className="d-flex align-items-center gap-2">
+                                                                    <input
+                                                                        type="text"
+                                                                        className="form-control"
+                                                                        value={value}
+                                                                        title={value}
+                                                                        placeholder={`Enter ${inputField.label}`}
+                                                                        disabled
+                                                                    />
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-sm link"
+                                                                        title="Open Link"
+                                                                        onClick={() =>
+                                                                            value
+                                                                                ? window.open(value, "_blank")
+                                                                                : alert("No link provided")
+                                                                        }
+                                                                    >
+                                                                        <i className="fas fa-external-link-alt"></i>
+                                                                    </button>
+                                                                </div>
+                                                            ) : inputField.type === "group" ? (
+                                                                <div className="row">
+                                                                    {inputField.fields.map((subField, idx) => {
+                                                                        const subVal = caseDetails[subField.label] || "";
+                                                                        return (
+                                                                            <div
+                                                                                key={idx}
+                                                                                className="col-12 col-sm-6 col-md-4 mb-2"
+                                                                            >
+                                                                                <label>{subField.label}</label>
+                                                                                <input
+                                                                                    type={
+                                                                                        subField.label.toLowerCase().includes("date")
+                                                                                            ? "date"
+                                                                                            : "text"
+                                                                                    }
+                                                                                    className="form-control"
+                                                                                    value={subVal}
+                                                                                    title={subVal}
+                                                                                    disabled
+                                                                                />
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            ) : (
+                                                                <input
+                                                                    type={
+                                                                        inputField.label.toLowerCase().includes("date")
+                                                                            ? "date"
+                                                                            : "text"
+                                                                    }
+                                                                    className="form-control"
+                                                                    value={value}
+                                                                    title={value}
+                                                                    placeholder={`Enter ${inputField.label}`}
+                                                                    disabled
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        data-bs-dismiss="modal"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })}
+
+
+            <div style={{ position: 'absolute', top: '-9999px', left: '-9999px', width: '1000px', }} >
                 <ReportToPrint ref={componentRef} selectedCaseData={selectedCaseData} fieldsToPrint={fieldsToPrint} viewMode={viewMode} />
             </div>
             {statusMessage && (
