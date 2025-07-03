@@ -304,8 +304,6 @@ export default function InProgress() {
 
     const [groupCollapseStates, setGroupCollapseStates] = useState({});
 
-
-
     return (
         <div className="Home">
             <div className="Grid">
@@ -1170,7 +1168,7 @@ export default function InProgress() {
                                         aria-label="Close"
                                     ></button>
                                 </div>
-                                <div className="modal-body">
+                                <div className="modal-body bg-light">
                                     <div className="container-fluid">
                                         <div className="row">
                                             {moreInfoForms.map((form, formIndex) =>

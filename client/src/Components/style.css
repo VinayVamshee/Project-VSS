@@ -739,7 +739,7 @@
   background-color: var(--navigation-color);
   flex-wrap: wrap;
   transition: width 0.3s ease;
-  width: 200px;
+  width: fit-content;
 }
 
 .Navigation.collapsed {
@@ -769,9 +769,7 @@
 
 
 .Navigation .btn {
-
   width: 100%;
-
   padding: 6px 12px;
   cursor: pointer;
   transition: background-color 0.2s ease;

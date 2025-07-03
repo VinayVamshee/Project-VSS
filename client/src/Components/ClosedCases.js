@@ -291,6 +291,7 @@ export default function ClosedCases() {
     const [openCollapses, setOpenCollapses] = useState([]);
     const [dateRange, setDateRange] = useState({ from: "", to: "" });
     const [selectedDateRangeField, setSelectedDateRangeField] = useState("");
+    const [groupCollapseStates, setGroupCollapseStates] = useState({});
 
     return (
         <div className="Home">
@@ -740,6 +741,15 @@ export default function ClosedCases() {
                                                     }} >
                                                     <i className="fa-solid fa-square-caret-up fa-rotate-180 fa-lg"></i>
                                                 </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target={`#MoreInformation-${caseItem._id}`}
+                                                    title="More Information"
+                                                >
+                                                    <i className="fas fa-info-circle fa-lg"></i>
+                                                </button>
                                             </>
                                         )
                                     }
@@ -756,7 +766,6 @@ export default function ClosedCases() {
                                                 const chargedSNo = chargedEntry?.SNo ?? Infinity;
                                                 const repeatCount = parseInt(caseDetails["No. of Charged Official"]) || 0;
 
-                                                // Filter function with custom logic for "DAR Action"
                                                 const shouldShowForm = (form) => {
                                                     if (!Array.isArray(form.showIn)) return false;
 
@@ -768,10 +777,10 @@ export default function ClosedCases() {
                                                     return form.showIn.includes(filterType);
                                                 };
 
-                                                // Render single input field
                                                 const renderInputField = (inputField, repeatIndex = null) => {
                                                     const labelSuffix = repeatIndex !== null ? ` ${repeatIndex + 1}` : "";
                                                     const valueKey = repeatIndex !== null ? `${inputField.label}_${repeatIndex}` : inputField.label;
+                                                    const value = caseDetails[valueKey] ?? "";
 
                                                     return (
                                                         <div
@@ -784,14 +793,16 @@ export default function ClosedCases() {
                                                                     <div className="row">
                                                                         {inputField.fields.map((subField, idx) => {
                                                                             const subKey = repeatIndex !== null ? `${subField.label}_${repeatIndex}` : subField.label;
+                                                                            const subValue = caseDetails[subKey] ?? "";
+
                                                                             return (
                                                                                 <div key={idx} className="col-12 col-sm-6 col-md-3 mb-2">
                                                                                     <label>{subField.label}:</label>
                                                                                     <input
                                                                                         type={subField.label.toLowerCase().includes("date") ? "date" : "text"}
                                                                                         className="form-control"
-                                                                                        placeholder={`Enter ${subField.label}`}
-                                                                                        value={caseDetails[subKey] ?? ""}
+                                                                                        value={subValue}
+                                                                                        title={subValue}
                                                                                         disabled
                                                                                     />
                                                                                 </div>
@@ -802,18 +813,35 @@ export default function ClosedCases() {
                                                             ) : inputField.type === "option" ? (
                                                                 <div>
                                                                     <p className="fw-bold">{inputField.label + labelSuffix}:</p>
-                                                                    <select
-                                                                        className="form-select"
-                                                                        disabled
-                                                                        value={caseDetails[valueKey] ?? ""}
-                                                                    >
+                                                                    <select className="form-select" value={value} disabled>
                                                                         <option value="">Select</option>
-                                                                        {inputField.fields.map((subField, idx) => (
-                                                                            <option key={idx} value={subField.label}>
-                                                                                {subField.label}
+                                                                        {inputField.fields.map((opt, idx) => (
+                                                                            <option key={idx} value={opt.label}>
+                                                                                {opt.label}
                                                                             </option>
                                                                         ))}
                                                                     </select>
+                                                                </div>
+                                                            ) : inputField.type === "link" ? (
+                                                                <div>
+                                                                    <p className="fw-bold text-primary">{inputField.label + labelSuffix}:</p>
+                                                                    <div className="d-flex align-items-center gap-2">
+                                                                        <input
+                                                                            type="text"
+                                                                            className="form-control"
+                                                                            value={value}
+                                                                            title={value}
+                                                                            disabled
+                                                                        />
+                                                                        <button
+                                                                            type="button"
+                                                                            className="btn btn-sm btn-outline-secondary"
+                                                                            title="Open Link"
+                                                                            onClick={() => value ? window.open(value, "_blank") : alert("No link provided")}
+                                                                        >
+                                                                            <i className="fas fa-external-link-alt"></i>
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
                                                             ) : (
                                                                 <div>
@@ -821,8 +849,8 @@ export default function ClosedCases() {
                                                                     <input
                                                                         type={inputField.label.toLowerCase().includes("date") ? "date" : "text"}
                                                                         className="form-control"
-                                                                        placeholder={`Enter ${inputField.label}`}
-                                                                        value={caseDetails[valueKey] ?? ""}
+                                                                        value={value}
+                                                                        title={value}
                                                                         disabled
                                                                     />
                                                                 </div>
@@ -833,31 +861,54 @@ export default function ClosedCases() {
 
                                                 return (
                                                     <>
-                                                        {/* Static fields before No. of Charged Official */}
+                                                        {/* Static Fields */}
                                                         {formSchemas
                                                             .filter(form => shouldShowForm(form) && form.SNo <= chargedSNo)
-                                                            .flatMap((form, formIndex) =>
-                                                                form.inputFields.map((inputField, index) =>
-                                                                    renderInputField(inputField)
-                                                                )
-                                                            )}
+                                                            .flatMap(form => form.inputFields.map(inputField => renderInputField(inputField)))
+                                                        }
 
-                                                        {/* Repeated groups after No. of Charged Official */}
-                                                        {Array.from({ length: repeatCount }).map((_, repeatIndex) => (
-                                                            <div key={`repeat-${repeatIndex}`} className="row mb-3">
-                                                                <p className="fw-bold rounded repeatIndex"> Charged Official ({repeatIndex + 1})</p>
-                                                                {formSchemas
-                                                                    .filter(form => shouldShowForm(form) && form.SNo > chargedSNo)
-                                                                    .flatMap((form, formIndex) =>
-                                                                        form.inputFields.map((inputField, index) =>
-                                                                            renderInputField(inputField, repeatIndex)
-                                                                        )
+                                                        {/* Repeating Groups */}
+                                                        {Array.from({ length: repeatCount }).map((_, repeatIndex) => {
+                                                            const isOpen = groupCollapseStates[repeatIndex];
+                                                            const nameKey = `Name Of Charged Official_${repeatIndex}`;
+                                                            const nameValue = caseDetails[nameKey] ?? "";
+
+                                                            return (
+                                                                <div key={`repeat-${repeatIndex}`} className="mb-3">
+                                                                    <button
+                                                                        className="btn btn-sm text-start px-2 rounded-3 shadow-sm btn-warning"
+                                                                        onClick={() =>
+                                                                            setGroupCollapseStates(prev => ({
+                                                                                ...prev,
+                                                                                [repeatIndex]: !prev[repeatIndex]
+                                                                            }))
+                                                                        }
+                                                                    >
+                                                                        <span className="fw-semibold">
+                                                                            {nameValue?.trim() ? nameValue : `Charged Official (${repeatIndex + 1})`}
+                                                                        </span>
+                                                                        <i className={`fa-solid ms-2 ${isOpen ? 'fa-angles-up' : 'fa-angles-down'}`}></i>
+                                                                    </button>
+
+                                                                    {isOpen && (
+                                                                        <div className="row p-3 mt-2 bg-light border rounded shadow-sm" style={{ animation: 'slideDownX 0.3s ease-in-out' }}>
+                                                                            {formSchemas
+                                                                                .filter(form => shouldShowForm(form) && form.SNo > chargedSNo)
+                                                                                .flatMap(form =>
+                                                                                    form.inputFields.map(inputField =>
+                                                                                        renderInputField(inputField, repeatIndex)
+                                                                                    )
+                                                                                )}
+                                                                        </div>
                                                                     )}
-                                                            </div>
-                                                        ))}
+                                                                </div>
+                                                            );
+                                                        })}
+
                                                     </>
                                                 );
                                             })()}
+
 
                                         </div>
                                     </div>
@@ -870,6 +921,147 @@ export default function ClosedCases() {
                     null
                 }
             </div>
+
+            {filteredCases.map((caseItem, index) => {
+                const caseDetails = caseItem.inputFields || {};
+                const modalId = `MoreInformation-${caseItem._id}`;
+
+                // Optional: helper to decide which fields to show
+                const moreInfoForms = formSchemas.filter(form =>
+                    Array.isArray(form.showIn) &&
+                    form.showIn.some(s => s.toLowerCase() === "more information")
+                );
+
+                return (
+                    <div
+                        key={`modal-${caseItem._id}`}
+                        className="modal fade"
+                        id={modalId}
+                        tabIndex="-1"
+                        aria-labelledby={`${modalId}-label`}
+                        aria-hidden="true"
+                    >
+                        <div className="modal-dialog modal-xl modal-dialog-scrollable">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title" id={`${modalId}-label`}>
+                                        More Information – {caseDetails["Registration No."] || ""}
+                                    </h5>
+                                    <button
+                                        type="button"
+                                        className="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"
+                                    ></button>
+                                </div>
+                                <div className="modal-body bg-light">
+                                    <div className="container-fluid">
+                                        <div className="row">
+                                            {moreInfoForms.map((form, formIndex) =>
+                                                form.inputFields.map((inputField, fieldIndex) => {
+                                                    const value = caseDetails[inputField.label] || "";
+
+                                                    return (
+                                                        <div
+                                                            key={`${formIndex}-${fieldIndex}`}
+                                                            className="col-12 col-sm-6 col-md-4 mb-3"
+                                                        >
+                                                            <label className="fw-bold text-primary mb-1">
+                                                                {inputField.label}
+                                                            </label>
+
+                                                            {inputField.type === "option" ? (
+                                                                <select className="form-select" value={value} disabled>
+                                                                    <option value="">Select</option>
+                                                                    {inputField.fields.map((opt, idx) => (
+                                                                        <option key={idx} value={opt.label}>
+                                                                            {opt.label}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            ) : inputField.type === "link" ? (
+                                                                <div className="d-flex align-items-center gap-2">
+                                                                    <input
+                                                                        type="text"
+                                                                        className="form-control"
+                                                                        value={value}
+                                                                        title={value}
+                                                                        placeholder={`Enter ${inputField.label}`}
+                                                                        disabled
+                                                                    />
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-sm link"
+                                                                        title="Open Link"
+                                                                        onClick={() =>
+                                                                            value
+                                                                                ? window.open(value, "_blank")
+                                                                                : alert("No link provided")
+                                                                        }
+                                                                    >
+                                                                        <i className="fas fa-external-link-alt"></i>
+                                                                    </button>
+                                                                </div>
+                                                            ) : inputField.type === "group" ? (
+                                                                <div className="row">
+                                                                    {inputField.fields.map((subField, idx) => {
+                                                                        const subVal = caseDetails[subField.label] || "";
+                                                                        return (
+                                                                            <div
+                                                                                key={idx}
+                                                                                className="col-12 col-sm-6 col-md-4 mb-2"
+                                                                            >
+                                                                                <label>{subField.label}</label>
+                                                                                <input
+                                                                                    type={
+                                                                                        subField.label.toLowerCase().includes("date")
+                                                                                            ? "date"
+                                                                                            : "text"
+                                                                                    }
+                                                                                    className="form-control"
+                                                                                    value={subVal}
+                                                                                    title={subVal}
+                                                                                    disabled
+                                                                                />
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            ) : (
+                                                                <input
+                                                                    type={
+                                                                        inputField.label.toLowerCase().includes("date")
+                                                                            ? "date"
+                                                                            : "text"
+                                                                    }
+                                                                    className="form-control"
+                                                                    value={value}
+                                                                    title={value}
+                                                                    placeholder={`Enter ${inputField.label}`}
+                                                                    disabled
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        data-bs-dismiss="modal"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })}
 
             <div style={{
                 position: 'absolute',
