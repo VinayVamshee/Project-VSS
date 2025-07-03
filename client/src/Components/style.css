@@ -791,7 +791,7 @@
 }
 
 .Navigation .btn.active {
-  background-color: var(--case-overview-bg);
+  background-color: var(--bg-color);
   border: 1px solid var(--accent-color);
   color: black;
 }
